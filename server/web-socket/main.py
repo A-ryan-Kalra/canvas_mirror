@@ -41,7 +41,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
     try:
         while True:
             data = await websocket.receive_text()
-            await manager.send_personal_message(f"You wrote: {data}", websocket)
+            # await manager.send_personal_message(f"You wrote: {data}", websocket)
             await manager.broadcast(data, client_id)
     except WebSocketDisconnect:
         manager.disconnect(websocket, client_id)
@@ -57,8 +57,8 @@ async def track_cursor(websocket: WebSocket, client_id: int):
     try:
         while True:
             data = await websocket.receive_text()
-            print("data=", data)
-            print("client_id=", client_id)
+            # print("data=", data)
+            # print("client_id=", client_id)
             await cursorManager.broadcast(data, client_id)
     except Exception as error:
         print("\nSomething went wrong=> \n", error)

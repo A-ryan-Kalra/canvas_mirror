@@ -86,7 +86,7 @@ function CursorMovement({ date }: { date: number }) {
       window.removeEventListener("mousemove", handleMouseMove);
       socketRef.current?.close();
     };
-  }, []);
+  }, [date]);
 
   return (
     <div
