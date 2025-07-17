@@ -1,5 +1,6 @@
 import uvicorn
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from .schemas import manager
 
 # from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -23,14 +24,28 @@ def healthz():
 active_connections = []
 
 
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    # active_connections.append(websocket)
+# @app.websocket("/ws")
+# async def websocket_endpoint(websocket: WebSocket):
+#     await websocket.accept()
+#     # active_connections.append(websocket)
 
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Message text is {data}")
+#     while True:
+#         data = await websocket.receive_text()
+#         await websocket.send_text(f"Message text is {data}")
+
+
+@app.websocket("/ws/{client_id}")
+async def websocket_endpoint(websocket: WebSocket, client_id: int):
+    await manager.connect(websocket)
+    try:
+        while True:
+
+            data = await websocket.receive_text()
+            await manager.send_personal_message(f"You wrote: {data}", websocket)
+            await manager.broadcast(f"Client Id {client_id} messaged: {data}")
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+        await manager.broadcast(f"Client Id {client_id} left the chat.")
 
 
 if __name__ == "__main__":
