@@ -10,7 +10,7 @@ function App() {
   // const position = useCursorMovement({ date });
 
   useEffect(() => {
-    socketRef.current = new WebSocket(`ws://localhost:8000/ws/${date}`);
+    socketRef.current = new WebSocket(`wss://localhost:8000/ws/${date}`);
     socketRef.current.onopen = () => {
       console.log("WebSocket connection established");
     };

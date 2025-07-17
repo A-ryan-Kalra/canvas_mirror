@@ -27,9 +27,10 @@ function CursorMovement({ date }: { date: number }) {
   });
 
   useEffect(() => {
-    socketRef.current = new WebSocket(
-      `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/cursor/${date}`
-    );
+    socketRef.current = new WebSocket(`ws://localhost:8000/ws/cursor/${date}`);
+    //  socketRef.current = new WebSocket(
+    //    `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/cursor/${date}`
+    //  );
     let lastSent = 0;
 
     socketRef.current.onclose = () => {
@@ -53,6 +54,7 @@ function CursorMovement({ date }: { date: number }) {
         y: event.clientY,
         width: window.innerWidth,
         height: window.innerHeight,
+        date,
       };
 
       setPosition(data); // optional: keep if you use position for rendering
@@ -92,16 +94,39 @@ function CursorMovement({ date }: { date: number }) {
         width: "50px",
         height: "50px",
         position: "fixed",
-        backgroundColor: "purple",
+        // left: reciever.x,
+        // top: reciever.y,
+        // backgroundColor: "purple",
         borderRadius: "23px",
         pointerEvents: "none",
         zIndex: 99999,
         transition: "transform 0.02s ease-in-out",
         transform: `translate(${
-          (reciever.x / reciever.width) * window.innerWidth
-        }px, ${(reciever.y / reciever.height) * window.innerHeight}px)`,
+          ((reciever.x - 25) / reciever.width) * window.innerWidth
+        }px, ${((reciever.y - 25) / reciever.height) * window.innerHeight}px)`,
       }}
-    ></div>
+    >
+      <div
+        style={{
+          width: "25px",
+          height: "25px",
+        }}
+        className=" relative top-0 left-0 mx-auto"
+      >
+        {date}
+      </div>
+      <div
+        style={{
+          backgroundImage: "url('/pointer.svg')",
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "contain",
+          backgroundPosition: "center",
+          width: "25px",
+          height: "25px",
+        }}
+        className=" relative top-0 left-0 mx-auto"
+      ></div>
+    </div>
   );
 }
 
