@@ -23,11 +23,11 @@ class ConnectionManager:
         await websocket.send_text(message)
 
     async def broadcast(self, message: str, client_id: int):
-        print("Connection =>\n", self.active_connections)
+        # print("Connection =>\n", self.active_connections)
         for connection in self.active_connections:
 
             if connection["id"] != client_id:
-                print("\n-----------------\n")
+                # print("\n-----------------\n")
                 await connection["socket"].send_text(message)
 
 

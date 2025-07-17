@@ -63,6 +63,9 @@ async def track_cursor(websocket: WebSocket, client_id: int):
     except Exception as error:
         print("\nSomething went wrong=> \n", error)
         cursorManager.disconnect(websocket, client_id)
+        await cursorManager.broadcast(
+            f"Client Id {client_id} left the chat.", client_id
+        )
 
 
 if __name__ == "__main__":

@@ -14,17 +14,17 @@ function CursorMovement({ date }: { date: number }) {
     width: 0,
     height: 0,
   });
-  const [reciever, setReciever] = useState<{
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  }>({
-    x: 0,
-    y: 0,
-    width: 0,
-    height: 0,
-  });
+  // const [reciever, setReciever] = useState<{
+  //   x: number;
+  //   y: number;
+  //   width: number;
+  //   height: number;
+  // }>({
+  //   x: 0,
+  //   y: 0,
+  //   width: 0,
+  //   height: 0,
+  // });
 
   useEffect(() => {
     socketRef.current = new WebSocket(`ws://localhost:8000/ws/cursor/${date}`);
@@ -57,8 +57,6 @@ function CursorMovement({ date }: { date: number }) {
         date,
       };
 
-      setPosition(data); // optional: keep if you use position for rendering
-
       if (
         socketRef.current &&
         socketRef.current.readyState === WebSocket.OPEN
@@ -72,7 +70,7 @@ function CursorMovement({ date }: { date: number }) {
     socketRef.current.onmessage = (event: MessageEvent) => {
       const parse = JSON.parse(event.data);
       // console.log("Received cursor data:", parse);
-      setReciever({
+      setPosition({
         x: parse.x,
         y: parse.y,
         width: parse.width,
@@ -99,8 +97,8 @@ function CursorMovement({ date }: { date: number }) {
         zIndex: 99999,
         transition: "transform 0.02s ease-in-out",
         transform: `translate(${
-          ((reciever.x - 25) / reciever.width) * window.innerWidth
-        }px, ${((reciever.y - 25) / reciever.height) * window.innerHeight}px)`,
+          ((position.x - 25) / position.width) * window.innerWidth
+        }px, ${((position.y - 25) / position.height) * window.innerHeight}px)`,
       }}
     >
       <div
