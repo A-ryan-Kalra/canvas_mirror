@@ -32,3 +32,33 @@ class ConnectionManager:
 
 
 manager = ConnectionManager()
+
+
+class CursorManager:
+
+    def __init__(self):
+        self.cursor_connections = []
+
+    async def connect(self, websocket: WebSocket, client_id: int):
+        await websocket.accept()
+        self.cursor_connections.append({"id": client_id, "socket": websocket})
+
+    def disconnect(self, websocket: WebSocket, client_id: int):
+        # self.cursor_connections.remove(["id"]=client_id)
+        self.cursor_connections = [
+            conn
+            for conn in self.cursor_connections
+            if not (conn["id"] == client_id and conn["socket"] == websocket)
+        ]
+
+    async def send_personal_message(self, message: str, websocket: WebSocket):
+        await websocket.send_text(message)
+
+    async def broadcast(self, message: str, client_id: int):
+        for connection in self.cursor_connections:
+
+            if connection["id"] != client_id:
+                await connection["socket"].send_text(message)
+
+
+cursorManager = CursorManager()

@@ -1,18 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 
+import CursorMovement from "../components/cursor-movement";
+
 function App() {
   const socketRef = useRef<WebSocket>(null);
   const [messages, setMessages] = useState<Array<string | WebSocket>>([]);
   const [input, setInput] = useState("");
+  let date = new Date().getMilliseconds();
+  // const position = useCursorMovement({ date });
 
   useEffect(() => {
-    let date = new Date().getMilliseconds();
     socketRef.current = new WebSocket(`ws://localhost:8000/ws/${date}`);
-    socketRef.current.onopen = (event: Event) => {
+    socketRef.current.onopen = () => {
       console.log("WebSocket connection established");
-
-      // console.log("event.data=>", event.data);
-      // setMessages((prev)=>[...prev,event.data])
     };
     socketRef.current.onmessage = (event: MessageEvent<WebSocket>) => {
       console.log("event.data=>", event.data);
@@ -36,6 +36,7 @@ function App() {
   };
   return (
     <div className="w-full h-dvh">
+      <CursorMovement date={date} />
       <div className="p-2 flex flex-col ">
         <h1 className="text-2xl">Fast Api Websocket Chats</h1>
         <div className="flex flex-col gap-y-2">

@@ -1,6 +1,6 @@
 import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from .schemas import manager
+from .schemas import manager, cursorManager
 from typing import Dict, List
 
 # from fastapi.responses import HTMLResponse
@@ -10,7 +10,9 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -50,7 +52,21 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
         await manager.broadcast(f"Client Id {client_id} left the chat.", client_id)
 
 
-rooms: Dict[str, List[WebSocket]] = {}
+# rooms: Dict[str, List[WebSocket]] = {}
+@app.websocket("/ws/cursor/{client_id}")
+async def track_cursor(websocket: WebSocket, client_id: int):
+    # await websocket.accept()
+    await cursorManager.connect(websocket, client_id)
+
+    try:
+        while True:
+            data = await websocket.receive_text()
+            print("data=", data)
+            print("client_id=", client_id)
+            await cursorManager.broadcast(data, client_id)
+    except Exception as error:
+        print("\nSomething went wrong=> \n", error)
+        cursorManager.disconnect(websocket, client_id)
 
 
 if __name__ == "__main__":
