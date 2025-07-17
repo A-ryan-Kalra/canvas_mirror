@@ -87,16 +87,13 @@ function CursorMovement({ date }: { date: number }) {
       socketRef.current?.close();
     };
   }, []);
-  console.log(reciever);
+
   return (
     <div
       style={{
         width: "50px",
         height: "50px",
         position: "fixed",
-        // left: reciever.x,
-        // top: reciever.y,
-        // backgroundColor: "purple",
         borderRadius: "23px",
         pointerEvents: "none",
         zIndex: 99999,
@@ -110,6 +107,7 @@ function CursorMovement({ date }: { date: number }) {
         style={{
           width: "25px",
           height: "25px",
+          color: "purple",
         }}
         className=" relative top-0 left-0 mx-auto"
       >
@@ -117,14 +115,18 @@ function CursorMovement({ date }: { date: number }) {
       </div>
       <div
         style={{
-          backgroundImage: "url('/pointer.svg')",
+          WebkitMaskImage: "url('/pointer.svg')",
+          WebkitMaskRepeat: "no-repeat",
+          WebkitMaskSize: "contain",
+          WebkitMaskPosition: "center",
           backgroundRepeat: "no-repeat",
           backgroundSize: "contain",
           backgroundPosition: "center",
+          backgroundColor: "purple",
           width: "25px",
           height: "25px",
         }}
-        className=" relative top-0 left-0 mx-auto"
+        className="relative top-0 left-0 mx-auto"
       ></div>
     </div>
   );

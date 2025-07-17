@@ -7,15 +7,19 @@ function App() {
   const [messages, setMessages] = useState<Array<string | WebSocket>>([]);
   const [input, setInput] = useState("");
   let date = new Date().getMilliseconds();
+
   // const position = useCursorMovement({ date });
+  let lastSent = 0;
 
   useEffect(() => {
-    socketRef.current = new WebSocket(`wss://localhost:8000/ws/${date}`);
+    socketRef.current = new WebSocket(`ws://localhost:8000/ws/${date}`);
     socketRef.current.onopen = () => {
       console.log("WebSocket connection established");
     };
     socketRef.current.onmessage = (event: MessageEvent<WebSocket>) => {
       console.log("event.data=>", event.data);
+      console.log("wowowo");
+
       setMessages((prev) => [...prev, event.data]);
     };
 
@@ -23,17 +27,23 @@ function App() {
       console.log("Websocket closed");
     };
 
+    window.addEventListener("keydown", sendMessage);
+
     return () => {
       socketRef.current?.close();
+      window.removeEventListener("keydown", sendMessage);
     };
   }, []);
 
   const sendMessage = () => {
+    // const now = Date.now();
+    // if (now - lastSent < 500) return;
     if (socketRef.current && input.trim()) {
       socketRef.current.send(input);
-      setInput("");
+      // setInput("");
     }
   };
+
   return (
     <div className="w-full h-dvh">
       <CursorMovement date={date} />

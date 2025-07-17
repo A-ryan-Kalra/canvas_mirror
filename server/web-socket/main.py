@@ -10,9 +10,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-    ],
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -44,9 +42,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
         while True:
             data = await websocket.receive_text()
             await manager.send_personal_message(f"You wrote: {data}", websocket)
-            await manager.broadcast(
-                f"Client Id {client_id} messaged: {data}", client_id
-            )
+            await manager.broadcast(data, client_id)
     except WebSocketDisconnect:
         manager.disconnect(websocket, client_id)
         await manager.broadcast(f"Client Id {client_id} left the chat.", client_id)
