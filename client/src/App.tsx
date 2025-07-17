@@ -6,8 +6,8 @@ function App() {
   const [input, setInput] = useState("");
 
   useEffect(() => {
-    let date = new Date();
-    socketRef.current = new WebSocket(`ws://localhost:8000/ws/${1 + 1 + 1}`);
+    let date = new Date().getMilliseconds();
+    socketRef.current = new WebSocket(`ws://localhost:8000/ws/${date}`);
     socketRef.current.onopen = (event: Event) => {
       console.log("WebSocket connection established");
 
