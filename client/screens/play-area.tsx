@@ -1,30 +1,38 @@
 import React, { useEffect, useRef, useState } from "react";
+import CursorMovement from "../components/cursor-movement";
+import { useSocket } from "../services/use-socket-provider";
+import { useLocation, useParams, useSearchParams } from "react-router-dom";
 
 function PlayArea() {
   const [messages, setMessages] = useState("");
   const [input, setInput] = useState("");
-  const [client, setInputsetCLient] = useState(0);
+
   const socketRef = useRef<WebSocket>(null);
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const { roomId } = useParams();
+  const name = searchParams.get("name");
+  const { socketProvider } = useSocket();
+  const socket = socketProvider.get(roomId ?? "");
+  console.log(socket);
 
   // const position = useCursorMovement({ date });
 
   useEffect(() => {
-    let date = new Date().getMilliseconds();
-    setInputsetCLient(date);
-    console.log(date);
-    socketRef.current = new WebSocket(`ws://localhost:8000/ws/${date}`);
-    socketRef.current.onopen = () => {
-      console.log("WebSocket connection established");
-    };
-    socketRef.current.onmessage = (event: MessageEvent<WebSocket>) => {
-      console.log("event.data=>", event.data);
+    // socketRef.current = new WebSocket(`ws://localhost:8000/ws/${date}`);
+    if (socket) {
+      socket.onmessage = (event: MessageEvent<WebSocket>) => {
+        console.log(event.data);
+      };
+      socket.onopen = () => {
+        console.log(`Successfully established the connection.`);
+        socket.send(`${name} entered the room.`);
+      };
 
-      setMessages(event.data as unknown as string);
-    };
-
-    socketRef.current.onclose = () => {
-      console.log("Websocket closed");
-    };
+      socket.onclose = () => {
+        console.log("Websocket closed");
+      };
+    }
 
     // window.addEventListener("keydown", () => sendMessage(input));
 
@@ -35,6 +43,7 @@ function PlayArea() {
   }, []);
 
   useEffect(() => {
+    // socket?.close();
     const sendMessage = () => {
       console.log("input==", input);
       // if (now - lastSent < 500) return;
@@ -48,6 +57,8 @@ function PlayArea() {
   // let date = new Date().getMilliseconds();
   return (
     <div className="p-2 flex flex-col ">
+      <CursorMovement name={name ?? ""} />
+
       <h1 className="text-2xl">Fast Api Websocket Chats</h1>
       <div className="flex flex-col gap-y-2">
         <input

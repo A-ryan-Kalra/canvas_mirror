@@ -22,13 +22,8 @@ function Lobby() {
     socket.onclose = () => {
       console.log(`${details.name} left the chat room.`);
     };
-    socket.onmessage = (event: MessageEvent<WebSocket>) => {
-      console.log(event.data);
-    };
-    socket.onopen = () => {
-      console.log(`Successfully established the connection.`);
-      socket.send(`${details.name} entered the room.`);
-    };
+
+    sessionStorage.setItem("room", details.room);
     socketProvider.set(details.room, socket);
     // socket.onmessage=(event:Event)=>{
 

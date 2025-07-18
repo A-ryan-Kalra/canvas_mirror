@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
 
-function CursorMovement({ date }: { date: number }) {
+function CursorMovement({ name }: { name: string }) {
   const socketRef = useRef<WebSocket>(null);
-
+  const { roomId } = useParams();
   const [position, setPosition] = useState<{
     x: number;
     y: number;
@@ -27,7 +28,7 @@ function CursorMovement({ date }: { date: number }) {
   // });
 
   useEffect(() => {
-    socketRef.current = new WebSocket(`ws://localhost:8000/ws/cursor/${date}`);
+    socketRef.current = new WebSocket(`ws://localhost:8000/ws/cursor/${name}`);
     //  socketRef.current = new WebSocket(
     //    `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/cursor/${date}`
     //  );
@@ -54,7 +55,7 @@ function CursorMovement({ date }: { date: number }) {
         y: event.clientY,
         width: window.innerWidth,
         height: window.innerHeight,
-        date,
+        name,
       };
 
       if (
@@ -84,7 +85,7 @@ function CursorMovement({ date }: { date: number }) {
       window.removeEventListener("mousemove", handleMouseMove);
       socketRef.current?.close();
     };
-  }, [date]);
+  }, [name]);
 
   return (
     <div
@@ -109,7 +110,7 @@ function CursorMovement({ date }: { date: number }) {
         }}
         className=" relative top-0 left-0 mx-auto"
       >
-        {date}
+        {name}
       </div>
       <div
         style={{
