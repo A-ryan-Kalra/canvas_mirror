@@ -1,43 +1,45 @@
 from fastapi import FastAPI, WebSocket
 from typing import Dict, List, Any
 
+rooms = Dict[str, List[WebSocket | str]]
 
-class ConnectionManager:
+
+class User:
+
     def __init__(self):
-        # room:Dict[str,WebSocket]=
-        self.active_connections: List[Dict[str, Any]] = []
+        self.active_connections: rooms = {}
 
-    async def connect(self, websocket: WebSocket, client_id: int):
+    async def connect(self, websocket: WebSocket, room: int, name: str):
         await websocket.accept()
-        self.active_connections.append({"id": client_id, "socket": websocket})
 
-    def disconnect(self, websocket: WebSocket, client_id: int):
-        # self.active_connections.remove(["id"]=client_id)
-        self.active_connections = [
-            conn
-            for conn in self.active_connections
-            if not (conn["id"] == client_id and conn["socket"] == websocket)
-        ]
+        if room not in self.active_connections:
+            self.active_connections[room] = []
+        self.active_connections[room].append({"socket": websocket, "name": name})
+
+    def disconnect(self, websocket: WebSocket, room: int, name: str):
+        if room in self.active_connections:
+            self.active_connections[room] = [
+                conn
+                for conn in self.active_connections[room]
+                if not (conn["socket"] == websocket and conn["name"] == name)
+            ]
 
     async def send_personal_message(self, message: str, websocket: WebSocket):
         await websocket.send_text(message)
 
-    async def broadcast(self, message: str, client_id: int):
-        # print("Connection =>\n", self.active_connections)
-        for connection in self.active_connections:
+    async def broadcast(self, message: str, room: int, name: str, websocket: WebSocket):
 
-            if connection["id"] != client_id:
-                # print("\n-----------------\n")
-                await connection["socket"].send_text(message)
+        if room in self.active_connections:
+            for user in self.active_connections[room]:
+                if user["name"] != name and user["socket"] != websocket:
+                    await user["socket"].send_text(message)
 
-
-manager = ConnectionManager()
-
-
-rooms = Dict[str, List[WebSocket | str]]
+        if not self.active_connections[room]:
+            del self.active_connections[room]
+            print("No users left")
 
 
-class CursorManager:
+class CursorMovement:
 
     def __init__(self):
         self.cursor_connections: rooms = {}
@@ -67,9 +69,10 @@ class CursorManager:
                 if user["name"] != name and user["socket"] != websocket:
                     await user["socket"].send_text(message)
 
-        if not cursorManager.cursor_connections[room]:
-            del cursorManager.cursor_connections[room]
+        if not self.cursor_connections[room]:
+            del self.cursor_connections[room]
             print("No users left")
 
 
-cursorManager = CursorManager()
+user = User()
+cursorMovement = CursorMovement()

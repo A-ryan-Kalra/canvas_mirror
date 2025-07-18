@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useSocket } from "../services/use-socket-provider";
 
 function CursorMovement({ name }: { name: string }) {
   const socketRef = useRef<WebSocket>(null);
   const { roomId } = useParams();
+  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState({ message: "", name: "" });
   const [position, setPosition] = useState<{
     x: number;
     y: number;
@@ -15,23 +18,25 @@ function CursorMovement({ name }: { name: string }) {
     width: 0,
     height: 0,
   });
-  // const [reciever, setReciever] = useState<{
-  //   x: number;
-  //   y: number;
-  //   width: number;
-  //   height: number;
-  // }>({
-  //   x: 0,
-  //   y: 0,
-  //   width: 0,
-  //   height: 0,
-  // });
+  const [userCursor, setUserCursor] = useState<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  }>({
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  });
+  const { socketProvider } = useSocket();
 
   useEffect(() => {
-    socketRef.current = new WebSocket(`ws://localhost:8000/ws/cursor/${name}`);
-    //  socketRef.current = new WebSocket(
-    //    `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/cursor/${date}`
-    //  );
+    socketRef.current = new WebSocket(
+      `ws://localhost:8000/ws/cursor/${roomId}?name=${name}`
+    );
+    // socketProvider.set(roomId ?? "", ws);
+
     let lastSent = 0;
 
     socketRef.current.onclose = () => {
@@ -57,6 +62,7 @@ function CursorMovement({ name }: { name: string }) {
         height: window.innerHeight,
         name,
       };
+      setUserCursor(data);
 
       if (
         socketRef.current &&
@@ -87,6 +93,32 @@ function CursorMovement({ name }: { name: string }) {
     };
   }, [name]);
 
+  useEffect(() => {
+    // const ws = new WebSocket(
+    //   `ws://localhost:8000/ws/message/${roomId}?name=${name}`
+    // );
+    // socketProvider.set(roomId ?? "", ws);
+    const socket = socketProvider.get(roomId ?? "");
+
+    if (socket) {
+      socket!.onclose = () => {
+        console.log(`${name} left the chat room.`);
+      };
+
+      socket!.onmessage = (event: MessageEvent) => {
+        const message = JSON.parse(event.data);
+        if (message.name !== name) setMessages(JSON.parse(event.data));
+      };
+    }
+
+    // window.addEventListener("keydown", () => sendMessage(input));
+
+    return () => {
+      socket?.close();
+      // window.removeEventListener("keydown", () => sendMessage(input));
+    };
+  }, []);
+
   return (
     <div
       style={{
@@ -112,6 +144,7 @@ function CursorMovement({ name }: { name: string }) {
       >
         {name}
       </div>
+      <div>{messages.name !== name && messages.message}</div>
       <div
         style={{
           WebkitMaskImage: "url('/pointer.svg')",

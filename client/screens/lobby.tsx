@@ -15,16 +15,8 @@ function Lobby() {
       return;
     }
     // socket.emit("room:join", details);
-    const socket = new WebSocket(
-      `ws://localhost:8000/ws/cursor/${details.room}?name=${details.name}`
-    );
-
-    socket.onclose = () => {
-      console.log(`${details.name} left the chat room.`);
-    };
 
     sessionStorage.setItem("room", details.room);
-    socketProvider.set(details.room, socket);
     // socket.onmessage=(event:Event)=>{
 
     // }
