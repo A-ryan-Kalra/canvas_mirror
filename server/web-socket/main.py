@@ -49,22 +49,30 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
 
 
 # rooms: Dict[str, List[WebSocket]] = {}
-@app.websocket("/ws/cursor/{client_id}")
-async def track_cursor(websocket: WebSocket, client_id: int):
+@app.websocket("/ws/cursor/{room}")
+async def track_cursor(websocket: WebSocket, room: int):
     # await websocket.accept()
-    await cursorManager.connect(websocket, client_id)
+
+    name = websocket.query_params.get("name")
+    await cursorManager.connect(websocket, room, name)
+    print(f"\nCursor Connections = {cursorManager.cursor_connections}\n")
 
     try:
         while True:
             data = await websocket.receive_text()
-            # print("data=", data)
-            # print("client_id=", client_id)
-            await cursorManager.broadcast(data, client_id)
+
+            await cursorManager.broadcast(data, room, websocket, name)
+
     except Exception as error:
-        print("\nSomething went wrong=> \n", error)
-        cursorManager.disconnect(websocket, client_id)
+        cursorManager.disconnect(websocket, room, name)
         await cursorManager.broadcast(
-            f"Client Id {client_id} left the chat.", client_id
+            f"Client Id {name} left the chat.", room, websocket, name
+        )
+    except Exception as error:
+        print(f"\nSomething went wrong {websocket} \n", error)
+        cursorManager.disconnect(websocket, room, name)
+        print(
+            f"\nError occured Cursor Connections = {cursorManager.cursor_connections}\n"
         )
 
 

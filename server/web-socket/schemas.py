@@ -34,31 +34,42 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
+rooms = Dict[str, List[WebSocket | str]]
+
+
 class CursorManager:
 
     def __init__(self):
-        self.cursor_connections = []
+        self.cursor_connections: rooms = {}
 
-    async def connect(self, websocket: WebSocket, client_id: int):
+    async def connect(self, websocket: WebSocket, room: int, name: str):
         await websocket.accept()
-        self.cursor_connections.append({"id": client_id, "socket": websocket})
 
-    def disconnect(self, websocket: WebSocket, client_id: int):
-        # self.cursor_connections.remove(["id"]=client_id)
-        self.cursor_connections = [
-            conn
-            for conn in self.cursor_connections
-            if not (conn["id"] == client_id and conn["socket"] == websocket)
-        ]
+        if room not in self.cursor_connections:
+            self.cursor_connections[room] = []
+        self.cursor_connections[room].append({"socket": websocket, "name": name})
+
+    def disconnect(self, websocket: WebSocket, room: int, name: str):
+        if room in self.cursor_connections:
+            self.cursor_connections[room] = [
+                conn
+                for conn in self.cursor_connections[room]
+                if not (conn["socket"] == websocket and conn["name"] == name)
+            ]
 
     async def send_personal_message(self, message: str, websocket: WebSocket):
         await websocket.send_text(message)
 
-    async def broadcast(self, message: str, client_id: int):
-        for connection in self.cursor_connections:
+    async def broadcast(self, message: str, room: int, name: str, websocket: WebSocket):
 
-            if connection["id"] != client_id:
-                await connection["socket"].send_text(message)
+        if room in self.cursor_connections:
+            for user in self.cursor_connections[room]:
+                if user["name"] != name and user["socket"] != websocket:
+                    await user["socket"].send_text(message)
+
+        if not cursorManager.cursor_connections[room]:
+            del cursorManager.cursor_connections[room]
+            print("No users left")
 
 
 cursorManager = CursorManager()
