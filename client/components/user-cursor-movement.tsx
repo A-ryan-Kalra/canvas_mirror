@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useParams } from "react-router-dom";
 import { useSocket } from "../services/use-socket-provider";
 
@@ -23,6 +23,7 @@ function UserCursorMovement({ name }: { name: string }) {
   });
 
   useEffect(() => {
+    var clear: number;
     // const handleMouseMove = (event: MouseEvent) => {
     //   const data = {
     //     x: event.clientX,
@@ -36,17 +37,21 @@ function UserCursorMovement({ name }: { name: string }) {
     // window.addEventListener("mousemove", handleMouseMove);
 
     const handleMouseDown = (event: MouseEvent) => {
-      console.log("userCursor.x", userCursor.x);
-      console.log("userCursor.y", userCursor.y);
-
       if (
         inputRef.current &&
         !inputRef.current.contains(event.target as Node)
       ) {
-        // setShowInput(true);
         setShowInput(false);
+        return;
       } else {
+        setInput("");
         setShowInput(true);
+
+        // clearTimeout(clear);
+
+        clear = setTimeout(() => {
+          inputRef?.current?.focus();
+        }, 0);
       }
 
       const data = {
@@ -84,31 +89,68 @@ function UserCursorMovement({ name }: { name: string }) {
     sendMessage();
   }, [input]);
 
+  const handleInput = (event: FormEvent) => {
+    event.preventDefault();
+    setInput("");
+    setShowInput(false);
+    const inputEl = document.createElement("input");
+    inputEl.value = input;
+    inputEl.style.position = "fixed";
+
+    // inputEl.style.transform = `translate(${userCursor.x}px, ${userCursor.y}px)`;
+    inputEl.style.left = `${userCursor.x - 25}px`;
+    inputEl.style.top = `${userCursor.y + 18}px`;
+    inputEl.style.zIndex = "999999";
+    inputEl.type = "text";
+    inputEl.maxLength = 30;
+    inputEl.placeholder = "Max 30 words";
+    inputEl.style.border = "none";
+    inputEl.style.outline = "none";
+    inputEl.style.outline = "none";
+    inputEl.style.padding = "0.25rem";
+    inputEl.style.background = "rgba(37, 235, 221, 0.6)";
+    inputEl.style.width = "150px";
+    inputEl.style.height = "30px";
+    inputEl.style.transition = "transform 0.02s ease-in-out";
+
+    // Style settings
+    // inputEl.style.position = "fixed";
+    // inputEl.style.left = `${userCursor.x}px`;
+    // inputEl.style.top = `${userCursor.y}px`;
+    inputEl.style.borderRadius = "3px";
+    // inputEl.style.zIndex = "99999";
+
+    document.body.appendChild(inputEl);
+    inputEl.focus();
+  };
+
   return (
     show && (
-      <input
-        maxLength={30}
-        placeholder="Max 30 words"
-        ref={inputRef}
-        style={{
-          width: "150px",
-          height: "30px",
-          position: "fixed",
-          borderRadius: "3px",
-          // pointerEvents: "none",
-          zIndex: 99999,
-          transition: "transform 0.02s ease-in-out",
-          transform: `translate(${
-            ((userCursor.x - 75) / userCursor.width) * window.innerWidth
-          }px, ${
-            ((userCursor.y - 25) / userCursor.height) * window.innerHeight
-          }px)`,
-        }}
-        onChange={(e) => setInput(e.target.value)}
-        type="text"
-        value={input}
-        className="border-[1px]  left-12 bg-black/10"
-      />
+      <form onSubmit={handleInput}>
+        <input
+          maxLength={30}
+          placeholder="Max 30 words"
+          ref={inputRef}
+          style={{
+            width: "150px",
+            height: "30px",
+            position: "fixed",
+            borderRadius: "3px",
+            // pointerEvents: "none",
+            zIndex: 99999,
+            transition: "transform 0.02s ease-in-out",
+            transform: `translate(${
+              ((userCursor.x - 75) / userCursor.width) * window.innerWidth
+            }px, ${
+              ((userCursor.y - 25) / userCursor.height) * window.innerHeight
+            }px)`,
+          }}
+          onChange={(e) => setInput(e.target.value)}
+          type="text"
+          value={input}
+          className="  border-none outline-none text-sm p-1 left-12 bg-black/10"
+        />
+      </form>
     )
   );
 }
