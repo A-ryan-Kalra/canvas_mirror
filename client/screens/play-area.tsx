@@ -19,6 +19,8 @@ function PlayArea() {
   const { roomId } = useParams();
   const name = searchParams.get("name");
   const { socketProvider } = useSocket();
+  const [show, setShowInput] = useState<boolean>(false);
+
   const [userData, setUserData] = useState<UserDetailsProps[]>([
     {
       x: 0,
@@ -38,6 +40,7 @@ function PlayArea() {
 
     if (socket) {
       socket!.onopen = () => {
+        setShowInput(true);
         console.log(`Successfully established the connection.`);
         const data = { name, message: `${name} entered the room.` };
         socket?.send(JSON.stringify(data));
@@ -143,8 +146,7 @@ function PlayArea() {
         userData.map((data: UserDetailsProps, index) => (
           <CursorMovement position={{ ...data }} key={index} />
         ))}
-
-      <UserCursorMovement name={name ?? ""} />
+      {show && <UserCursorMovement name={name ?? ""} />}
       <h1 className="text-2xl">Fast Api Websocket Chats</h1>
       <div className="flex flex-col gap-y-2">
         <button

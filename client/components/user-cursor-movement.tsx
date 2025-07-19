@@ -24,19 +24,15 @@ function UserCursorMovement({ name }: { name: string }) {
 
   useEffect(() => {
     var clear: number;
-    // const handleMouseMove = (event: MouseEvent) => {
-    //   const data = {
-    //     x: event.clientX,
-    //     y: event.clientY,
-    //     width: window.innerWidth,
-    //     height: window.innerHeight,
-    //   };
-    //   setUserCursor(data);
 
-    // };
-    // window.addEventListener("mousemove", handleMouseMove);
-
+    // socket.readyState === WebSocket.OPEN;
     const handleMouseDown = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+
+      if (target.classList.contains("dynamic-input")) {
+        return;
+      }
+
       if (
         inputRef.current &&
         !inputRef.current.contains(event.target as Node)
@@ -74,7 +70,7 @@ function UserCursorMovement({ name }: { name: string }) {
       // window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mousedown", handleMouseDown);
     };
-  }, []);
+  }, [socketProvider]);
 
   useEffect(() => {
     const sendMessage = () => {
@@ -93,41 +89,72 @@ function UserCursorMovement({ name }: { name: string }) {
     event.preventDefault();
     setInput("");
     setShowInput(false);
-    const inputEl = document.createElement("input");
-    inputEl.value = input;
-    inputEl.style.position = "fixed";
 
-    // inputEl.style.transform = `translate(${userCursor.x}px, ${userCursor.y}px)`;
-    inputEl.style.left = `${userCursor.x - 25}px`;
-    inputEl.style.top = `${userCursor.y + 18}px`;
-    inputEl.style.zIndex = "999999";
-    inputEl.type = "text";
-    inputEl.maxLength = 30;
-    inputEl.placeholder = "Max 30 words";
+    const inputEl = document.createElement("div");
+    inputEl.textContent = input;
+
+    inputEl.style.minWidth = "50px";
+    inputEl.style.maxWidth = "100px";
+    inputEl.style.resize = "both";
+    inputEl.contentEditable = "true";
+    inputEl.setAttribute("placeholder", "Max 30 words");
+    inputEl.style.whiteSpace = "pre-wrap";
+    inputEl.style.wordBreak = "break-word";
+    inputEl.style.overflowWrap = "break-word";
     inputEl.style.border = "none";
+    inputEl.style.borderRadius = "10px";
     inputEl.style.outline = "none";
-    inputEl.style.outline = "none";
-    inputEl.style.padding = "0.25rem";
+    inputEl.style.padding = "0.55rem";
+
     inputEl.style.background = "rgba(37, 235, 221, 0.6)";
-    inputEl.style.width = "150px";
-    inputEl.style.height = "30px";
-    inputEl.style.transition = "transform 0.02s ease-in-out";
-
-    // Style settings
-    // inputEl.style.position = "fixed";
-    // inputEl.style.left = `${userCursor.x}px`;
-    // inputEl.style.top = `${userCursor.y}px`;
-    inputEl.style.borderRadius = "3px";
-    // inputEl.style.zIndex = "99999";
-
+    inputEl.style.cursor = "grab";
+    inputEl.style.position = "fixed";
+    inputEl.style.left = `${userCursor.x}px`;
+    inputEl.style.top = `${userCursor.y}px`;
+    inputEl.className = "dynamic-input";
     document.body.appendChild(inputEl);
-    inputEl.focus();
+    // inputEl.focus();
+
+    let isDragging = false;
+    let offsetX = 0;
+    let offsetY = 0;
+
+    inputEl.addEventListener("mousedown", (e) => {
+      isDragging = true;
+      offsetX = e.clientX - inputEl.offsetLeft;
+      offsetY = e.clientY - inputEl.offsetTop;
+    });
+
+    document.addEventListener("mousemove", (e) => {
+      if (isDragging) {
+        // console.log(e.clientX - offsetX);
+        // console.log(e.clientY - offsetY);
+        inputEl.style.left = `${e.clientX - offsetX}px`;
+        inputEl.style.top = `${e.clientY - offsetY}px`;
+      }
+    });
+    document.addEventListener("mouseup", () => {
+      isDragging = false;
+    });
+    inputEl.addEventListener("keydown", (e) => {
+      if (e.key === "Delete") {
+        inputEl.remove();
+      } else if (e.key === "Escape") {
+        inputEl.blur();
+      }
+    });
   };
 
   return (
     show && (
       <form onSubmit={handleInput}>
         <input
+          onKeyDown={(e) => {
+            if (e.key === "Escape") {
+              setShowInput(false);
+              setInput("false");
+            }
+          }}
           maxLength={30}
           placeholder="Max 30 words"
           ref={inputRef}
