@@ -39,10 +39,10 @@ function UserCursorMovement({ name }: { name: string }) {
 
   useEffect(() => {
     const sendMessage = () => {
-      if (socketProvider.get(roomId ?? "") && input.trim()) {
+      if (socketProvider.get("message") && input.trim()) {
         const data = { name, message: input };
         // console.log("data====", data);
-        socketProvider.get(roomId ?? "")!.send(JSON.stringify(data));
+        socketProvider.get("message")!.send(JSON.stringify(data));
 
         // setInput("");
       }

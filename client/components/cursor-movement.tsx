@@ -32,25 +32,40 @@ function CursorMovement({ name }: { name: string }) {
   const { socketProvider } = useSocket();
 
   useEffect(() => {
-    socketRef.current = new WebSocket(
+    const ws = new WebSocket(
       `ws://localhost:8000/ws/cursor/${roomId}?name=${name}`
     );
-    // socketProvider.set(roomId ?? "", ws);
+    socketProvider.set("cursor", ws);
+    const socket = socketProvider.get("cursor");
 
     let lastSent = 0;
 
-    socketRef.current.onclose = () => {
-      console.log("SocketRef.current closed.");
-      // Optionally: attempt reconnect
-    };
+    if (socket) {
+      socket.onclose = () => {
+        console.log("SocketRef.current closed.");
+        // Optionally: attempt reconnect
+      };
 
-    socketRef.current.onerror = (err) => {
-      console.error("SocketRef.current error:", err);
-    };
+      socket.onerror = (err) => {
+        console.error("SocketRef.current error:", err);
+      };
 
-    socketRef.current.onopen = () => {
-      console.log("Socket opened.");
-    };
+      socket.onopen = () => {
+        console.log("Socket opened.");
+      };
+
+      socket.onmessage = (event: MessageEvent) => {
+        const parse = JSON.parse(event.data);
+        // console.log("Received cursor data:", parse);
+        setPosition({
+          x: parse.x,
+          y: parse.y,
+          width: parse.width,
+          height: parse.height,
+        });
+      };
+    }
+
     const handleMouseMove = (event: MouseEvent) => {
       const now = Date.now();
       if (now - lastSent < 20) return;
@@ -64,32 +79,18 @@ function CursorMovement({ name }: { name: string }) {
       };
       setUserCursor(data);
 
-      if (
-        socketRef.current &&
-        socketRef.current.readyState === WebSocket.OPEN
-      ) {
+      if (socket && socket.readyState === WebSocket.OPEN) {
         // console.log(data);
-        socketRef.current.send(JSON.stringify(data));
+        socket.send(JSON.stringify(data));
         lastSent = now;
       }
-    };
-
-    socketRef.current.onmessage = (event: MessageEvent) => {
-      const parse = JSON.parse(event.data);
-      // console.log("Received cursor data:", parse);
-      setPosition({
-        x: parse.x,
-        y: parse.y,
-        width: parse.width,
-        height: parse.height,
-      });
     };
 
     window.addEventListener("mousemove", handleMouseMove);
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
-      socketRef.current?.close();
+      socket?.close();
     };
   }, [name]);
 
@@ -98,7 +99,7 @@ function CursorMovement({ name }: { name: string }) {
     //   `ws://localhost:8000/ws/message/${roomId}?name=${name}`
     // );
     // socketProvider.set(roomId ?? "", ws);
-    const socket = socketProvider.get(roomId ?? "");
+    const socket = socketProvider.get("message");
 
     if (socket) {
       socket!.onclose = () => {
@@ -106,7 +107,8 @@ function CursorMovement({ name }: { name: string }) {
       };
 
       socket!.onmessage = (event: MessageEvent) => {
-        const message = JSON.parse(event.data);
+        const parsed = JSON.parse(event.data);
+        const message = parsed ?? {};
         if (message.name !== name) setMessages(JSON.parse(event.data));
       };
     }

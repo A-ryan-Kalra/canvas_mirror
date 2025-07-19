@@ -16,8 +16,8 @@ function PlayArea() {
     const ws = new WebSocket(
       `ws://localhost:8000/ws/message/${roomId}?name=${name}`
     );
-    socketProvider.set(roomId ?? "", ws);
-    const socket = socketProvider.get(roomId ?? "");
+    socketProvider.set("message", ws);
+    const socket = socketProvider.get("message");
 
     socket!.onopen = () => {
       console.log(`Successfully established the connection.`);
