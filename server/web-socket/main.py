@@ -75,7 +75,6 @@ async def track_cursor(websocket: WebSocket, room: int):
 
     name = websocket.query_params.get("name")
     await cursorMovement.connect(websocket, room, name)
-
     try:
         while True:
             data = await websocket.receive_text()
