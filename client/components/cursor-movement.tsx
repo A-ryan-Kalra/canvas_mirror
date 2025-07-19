@@ -1,9 +1,27 @@
 import { useEffect, useRef, useState } from "react";
+import { useLocation, useParams } from "react-router-dom";
+import { useSocket } from "../services/use-socket-provider";
 
-function CursorMovement({ date }: { date: number }) {
+export interface CursorMovementProps {
+  position: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    name: string;
+  };
+}
+
+function CursorMovement({ position }: CursorMovementProps) {
   const socketRef = useRef<WebSocket>(null);
+  const { roomId } = useParams();
+  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState({ message: "", name: "" });
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const name = searchParams.get("name");
 
-  const [position, setPosition] = useState<{
+  const [userCursor, setUserCursor] = useState<{
     x: number;
     y: number;
     width: number;
@@ -14,77 +32,43 @@ function CursorMovement({ date }: { date: number }) {
     width: 0,
     height: 0,
   });
-  // const [reciever, setReciever] = useState<{
-  //   x: number;
-  //   y: number;
-  //   width: number;
-  //   height: number;
-  // }>({
-  //   x: 0,
-  //   y: 0,
-  //   width: 0,
-  //   height: 0,
-  // });
+  const { socketProvider } = useSocket();
+
+  // useEffect(() => {
+  //   const ws = new WebSocket(
+  //     `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/cursor/${roomId}?name=${position.name}`
+  //   );
+  //   socketProvider.set("cursor", ws);
+
+  //   // return () => {};
+  // }, [position.name]);
 
   useEffect(() => {
-    socketRef.current = new WebSocket(`ws://localhost:8000/ws/cursor/${date}`);
-    //  socketRef.current = new WebSocket(
-    //    `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/cursor/${date}`
-    //  );
-    let lastSent = 0;
+    // const ws = new WebSocket(
+    //   `ws://localhost:8000/ws/message/${roomId}?name=${name}`
+    // );
+    // socketProvider.set(roomId ?? "", ws);
+    const socket = socketProvider.get("message");
 
-    socketRef.current.onclose = () => {
-      console.log("SocketRef.current closed.");
-      // Optionally: attempt reconnect
-    };
-
-    socketRef.current.onerror = (err) => {
-      console.error("SocketRef.current error:", err);
-    };
-
-    socketRef.current.onopen = () => {
-      console.log("Socket opened.");
-    };
-    const handleMouseMove = (event: MouseEvent) => {
-      const now = Date.now();
-      if (now - lastSent < 20) return;
-
-      const data = {
-        x: event.clientX,
-        y: event.clientY,
-        width: window.innerWidth,
-        height: window.innerHeight,
-        date,
+    if (socket) {
+      socket!.onclose = () => {
+        console.log(`${name} left the chat room.`);
       };
 
-      if (
-        socketRef.current &&
-        socketRef.current.readyState === WebSocket.OPEN
-      ) {
-        // console.log(data);
-        socketRef.current.send(JSON.stringify(data));
-        lastSent = now;
-      }
-    };
+      socket!.onmessage = (event: MessageEvent) => {
+        const parsed = JSON.parse(event.data);
+        const message = parsed ?? {};
+        if (message.name !== name) setMessages(JSON.parse(event.data));
+      };
+    }
 
-    socketRef.current.onmessage = (event: MessageEvent) => {
-      const parse = JSON.parse(event.data);
-      // console.log("Received cursor data:", parse);
-      setPosition({
-        x: parse.x,
-        y: parse.y,
-        width: parse.width,
-        height: parse.height,
-      });
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
+    // window.addEventListener("keydown", () => sendMessage(input));
 
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      socketRef.current?.close();
+      // socket?.close();
+      // window.removeEventListener("keydown", () => sendMessage(input));
     };
-  }, [date]);
+  }, []);
 
   return (
     <div
@@ -109,7 +93,10 @@ function CursorMovement({ date }: { date: number }) {
         }}
         className=" relative top-0 left-0 mx-auto"
       >
-        {date}
+        {position.name}
+        <div className="absolute -top-11 text-amber-400 min-w-[150px]">
+          {messages.name !== name && messages.message}
+        </div>
       </div>
       <div
         style={{

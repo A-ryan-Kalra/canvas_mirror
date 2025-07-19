@@ -1,6 +1,6 @@
 import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from .schemas import manager, cursorManager
+from .schemas import user, cursorMovement
 from typing import Dict, List
 
 # from fastapi.responses import HTMLResponse
@@ -35,36 +35,58 @@ active_connections = []
 #         await websocket.send_text(f"Message text is {data}")
 
 
-@app.websocket("/ws/{client_id}")
-async def websocket_endpoint(websocket: WebSocket, client_id: int):
-    await manager.connect(websocket, client_id)
-    try:
-        while True:
-            data = await websocket.receive_text()
-            # await manager.send_personal_message(f"You wrote: {data}", websocket)
-            await manager.broadcast(data, client_id)
-    except WebSocketDisconnect:
-        manager.disconnect(websocket, client_id)
-        await manager.broadcast(f"Client Id {client_id} left the chat.", client_id)
+# @app.websocket("/ws/{client_id}")
+# async def websocket_endpoint(websocket: WebSocket, client_id: int):
+#     await manager.connect(websocket, client_id)
+#     try:
+#         while True:
+#             data = await websocket.receive_text()
+#             # await manager.send_personal_message(f"You wrote: {data}", websocket)
+#             await manager.broadcast(data, client_id)
+#     except WebSocketDisconnect:
+#         manager.disconnect(websocket, client_id)
+#         await manager.broadcast(f"Client Id {client_id} left the chat.", client_id)
 
 
 # rooms: Dict[str, List[WebSocket]] = {}
-@app.websocket("/ws/cursor/{client_id}")
-async def track_cursor(websocket: WebSocket, client_id: int):
+@app.websocket("/ws/message/{room}")
+async def track_cursor(websocket: WebSocket, room: int):
     # await websocket.accept()
-    await cursorManager.connect(websocket, client_id)
+
+    name = websocket.query_params.get("name")
+    await user.connect(websocket, room, name)
 
     try:
         while True:
             data = await websocket.receive_text()
-            # print("data=", data)
-            # print("client_id=", client_id)
-            await cursorManager.broadcast(data, client_id)
+
+            await user.broadcast(data, room, websocket, name)
+
     except Exception as error:
-        print("\nSomething went wrong=> \n", error)
-        cursorManager.disconnect(websocket, client_id)
-        await cursorManager.broadcast(
-            f"Client Id {client_id} left the chat.", client_id
+        print(f"\nSomething went wrong {websocket} \n", error)
+        user.disconnect(websocket, room, name)
+        cursorMovement.disconnect(websocket, room, name)
+        await user.broadcast(f"Client Id {name} left the chat.", room, websocket, name)
+
+
+@app.websocket("/ws/cursor/{room}")
+async def track_cursor(websocket: WebSocket, room: int):
+    # await websocket.accept()
+
+    name = websocket.query_params.get("name")
+    await cursorMovement.connect(websocket, room, name)
+    try:
+        while True:
+            data = await websocket.receive_text()
+
+            await cursorMovement.broadcast(data, room, name, websocket)
+
+    except Exception as error:
+        print(f"\nSomething went wrong {websocket} \n", error)
+        user.disconnect(websocket, room, name)
+        cursorMovement.disconnect(websocket, room, name)
+        await cursorMovement.broadcast(
+            f"Client Id {name} left the chat.", room, websocket, name
         )
 
 
