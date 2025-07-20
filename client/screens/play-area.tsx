@@ -82,7 +82,6 @@ function PlayArea() {
         const incomming: UserDetailsProps = JSON.parse(event.data);
 
         setUserData((prev: UserDetailsProps[]) => {
-          console.log("prev", prev);
           const existingIndex = prev.findIndex(
             (user) => user.name == incomming.name
           );

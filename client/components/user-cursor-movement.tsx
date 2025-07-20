@@ -88,29 +88,30 @@ function UserCursorMovement({ name }: { name: string }) {
   const handleInput = (event: FormEvent) => {
     event.preventDefault();
 
-    const inputEl = document.createElement("div");
-    inputEl.textContent = input;
+    const devEl = document.createElement("div");
+    devEl.textContent = input;
 
-    inputEl.style.minWidth = "50px";
-    inputEl.style.maxWidth = "100px";
-    inputEl.style.resize = "both";
-    inputEl.contentEditable = "true";
-    inputEl.setAttribute("placeholder", "Max 30 words");
-    inputEl.style.whiteSpace = "pre-wrap";
-    inputEl.style.wordBreak = "break-word";
-    inputEl.style.overflowWrap = "break-word";
-    inputEl.style.border = "none";
-    inputEl.style.borderRadius = "10px";
-    inputEl.style.outline = "none";
-    inputEl.style.padding = "0.55rem";
+    devEl.style.minWidth = "50px";
+    devEl.style.maxWidth = "100px";
+    devEl.style.resize = "both";
+    devEl.contentEditable = "true";
+    devEl.setAttribute("placeholder", "Max 30 words");
+    devEl.style.whiteSpace = "pre-wrap";
+    devEl.style.wordBreak = "break-word";
+    devEl.style.overflowWrap = "break-word";
+    devEl.style.border = "none";
+    devEl.style.borderRadius = "10px";
+    devEl.style.outline = "none";
+    devEl.style.padding = "0.55rem";
+    devEl.spellcheck = false;
 
-    inputEl.style.background = "rgba(37, 235, 221, 0.6)";
-    inputEl.style.cursor = "grab";
-    inputEl.style.position = "fixed";
-    inputEl.style.left = `${userCursor.x}px`;
-    inputEl.style.top = `${userCursor.y}px`;
-    inputEl.className = "dynamic-input";
-    document.body.appendChild(inputEl);
+    devEl.style.background = "rgba(37, 235, 221, 0.6)";
+    devEl.style.cursor = "grab";
+    devEl.style.position = "fixed";
+    devEl.style.left = `${userCursor.x}px`;
+    devEl.style.top = `${userCursor.y}px`;
+    devEl.className = "dynamic-input";
+    document.body.appendChild(devEl);
     // inputEl.focus();
 
     let isDragging = false;
@@ -129,24 +130,24 @@ function UserCursorMovement({ name }: { name: string }) {
 
     setInput("");
     setShowInput(false);
-    inputEl.addEventListener("mousedown", (e) => {
+    devEl.addEventListener("mousedown", (e) => {
       isDragging = true;
-      offsetX = e.clientX - inputEl.offsetLeft;
-      offsetY = e.clientY - inputEl.offsetTop;
+      offsetX = e.clientX - devEl.offsetLeft;
+      offsetY = e.clientY - devEl.offsetTop;
     });
 
     document.addEventListener("mousemove", (e) => {
       if (isDragging) {
         // console.log(e.clientX - offsetX);
         // console.log(e.clientY - offsetY);
-        inputEl.style.left = `${e.clientX - offsetX}px`;
-        inputEl.style.top = `${e.clientY - offsetY}px`;
+        devEl.style.left = `${e.clientX - offsetX}px`;
+        devEl.style.top = `${e.clientY - offsetY}px`;
       }
     });
-    inputEl.addEventListener("touchstart", (e: TouchEvent) => {
+    devEl.addEventListener("touchstart", (e: TouchEvent) => {
       if (e.touches.length > 0) {
         const touch = e.touches[0];
-        const react = inputEl.getBoundingClientRect();
+        const react = devEl.getBoundingClientRect();
         offsetX = touch.clientX - react.left;
         offsetY = touch.clientY - react.top;
         isDragging = true;
@@ -156,8 +157,8 @@ function UserCursorMovement({ name }: { name: string }) {
     document.addEventListener("touchmove", (e) => {
       if (isDragging && e.touches.length > 0) {
         const touch = e.touches[0];
-        inputEl.style.left = `${touch.clientX - offsetX}px`;
-        inputEl.style.top = `${touch.clientY - offsetY}px`;
+        devEl.style.left = `${touch.clientX - offsetX}px`;
+        devEl.style.top = `${touch.clientY - offsetY}px`;
       }
     });
     document.addEventListener("touchend", () => {
@@ -167,15 +168,15 @@ function UserCursorMovement({ name }: { name: string }) {
     document.addEventListener("mouseup", () => {
       isDragging = false;
     });
-    inputEl.addEventListener("keydown", (e) => {
+    devEl.addEventListener("keydown", (e) => {
       if (e.key === "Delete") {
-        inputEl.remove();
+        devEl.remove();
       } else if (e.key === "Escape") {
-        inputEl.blur();
+        devEl.blur();
       }
       if (window.innerWidth < 1024) {
-        if (e.key === "Backspace" && inputEl.textContent?.trim() === "") {
-          inputEl.remove();
+        if (e.key === "Backspace" && devEl.textContent?.trim() === "") {
+          devEl.remove();
         }
       }
     });
