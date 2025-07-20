@@ -49,10 +49,8 @@ async def websocket_endpoint(websocket: WebSocket, room: int):
     try:
         while True:
             data = await websocket.receive_text()
-            print(f"\nData= {data}\n")
 
             if room in user.active_connections:
-                print("\nExecuted \n", user.active_connections[room])
 
                 for conn in user.active_connections[room]:
                     if (
