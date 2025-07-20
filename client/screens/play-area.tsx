@@ -33,8 +33,11 @@ function PlayArea() {
 
   useEffect(() => {
     const ws = new WebSocket(
-      `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/message/${roomId}?name=${name}`
+      `ws://localhost:8000/ws/message/${roomId}?name=${name}`
     );
+    // const ws = new WebSocket(
+    //   `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/message/${roomId}?name=${name}`
+    // );
     socketProvider.set("message", ws);
     const socket = socketProvider.get("message");
 
@@ -51,8 +54,11 @@ function PlayArea() {
     }
 
     let lastSent = 0;
+    // const ws1 = new WebSocket(
+    //   `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/cursor/${roomId}?name=${name}`
+    // );
     const ws1 = new WebSocket(
-      `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/cursor/${roomId}?name=${name}`
+      `ws://localhost:8000/ws/cursor/${roomId}?name=${name}`
     );
 
     socketProvider.set("cursor", ws1);
@@ -76,6 +82,7 @@ function PlayArea() {
         const incomming: UserDetailsProps = JSON.parse(event.data);
 
         setUserData((prev: UserDetailsProps[]) => {
+          console.log("prev", prev);
           const existingIndex = prev.findIndex(
             (user) => user.name == incomming.name
           );

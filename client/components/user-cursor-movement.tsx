@@ -56,7 +56,7 @@ function UserCursorMovement({ name }: { name: string }) {
         width: window.innerWidth,
         height: window.innerHeight,
       };
-      console.log(data);
+
       setUserCursor(data);
 
       // else if (currentXPosition === Number.NEGATIVE_INFINITY) {
@@ -87,8 +87,6 @@ function UserCursorMovement({ name }: { name: string }) {
 
   const handleInput = (event: FormEvent) => {
     event.preventDefault();
-    setInput("");
-    setShowInput(false);
 
     const inputEl = document.createElement("div");
     inputEl.textContent = input;
@@ -119,6 +117,18 @@ function UserCursorMovement({ name }: { name: string }) {
     let offsetX = 0;
     let offsetY = 0;
 
+    const data = {
+      x: userCursor.x,
+      y: userCursor.y,
+      width: window.innerWidth,
+      height: window.innerHeight,
+      name,
+      message: input,
+    };
+    socketProvider.get("message")?.send(JSON.stringify(data));
+
+    setInput("");
+    setShowInput(false);
     inputEl.addEventListener("mousedown", (e) => {
       isDragging = true;
       offsetX = e.clientX - inputEl.offsetLeft;
@@ -133,6 +143,27 @@ function UserCursorMovement({ name }: { name: string }) {
         inputEl.style.top = `${e.clientY - offsetY}px`;
       }
     });
+    inputEl.addEventListener("touchstart", (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        const touch = e.touches[0];
+        const react = inputEl.getBoundingClientRect();
+        offsetX = touch.clientX - react.left;
+        offsetY = touch.clientY - react.top;
+        isDragging = true;
+      }
+    });
+
+    document.addEventListener("touchmove", (e) => {
+      if (isDragging && e.touches.length > 0) {
+        const touch = e.touches[0];
+        inputEl.style.left = `${touch.clientX - offsetX}px`;
+        inputEl.style.top = `${touch.clientY - offsetY}px`;
+      }
+    });
+    document.addEventListener("touchend", () => {
+      isDragging = false;
+    });
+
     document.addEventListener("mouseup", () => {
       isDragging = false;
     });
@@ -141,6 +172,11 @@ function UserCursorMovement({ name }: { name: string }) {
         inputEl.remove();
       } else if (e.key === "Escape") {
         inputEl.blur();
+      }
+      if (window.innerWidth < 1024) {
+        if (e.key === "Backspace" && inputEl.textContent?.trim() === "") {
+          inputEl.remove();
+        }
       }
     });
   };

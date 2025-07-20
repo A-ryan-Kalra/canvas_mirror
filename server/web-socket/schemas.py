@@ -1,7 +1,7 @@
 from fastapi import FastAPI, WebSocket
 from typing import Dict, List, Any
 
-rooms = Dict[str, List[WebSocket | str]]
+rooms = Dict[int, List[Dict[str, WebSocket]] | str]
 
 
 class User:
