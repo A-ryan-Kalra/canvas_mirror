@@ -2,9 +2,8 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useParams } from "react-router-dom";
 import { useSocket } from "../services/use-socket-provider";
 import type { StickerDetailProps } from "../types";
-
+import { v4 as uuidv4 } from "uuid";
 function UserCursorMovement({ name }: { name: string }) {
-  let [totlaStickers, setTotalStickers] = useState(1);
   const { roomId } = useParams();
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState({ message: "", name: "" });
@@ -99,7 +98,7 @@ function UserCursorMovement({ name }: { name: string }) {
     };
     sendMessage();
   }, [input]);
-  function handleStickerMovement(data: StickerDetailProps) {
+  function handleStickerMovement(data: StickerDetailProps | {}) {
     //  setUserCursor(data);
     const stickerMovement = socketProvider.get("cursor");
     if (stickerMovement && stickerMovement.readyState === WebSocket.OPEN) {
@@ -109,7 +108,7 @@ function UserCursorMovement({ name }: { name: string }) {
   }
   const handleInput = (event: FormEvent) => {
     event.preventDefault();
-    setTotalStickers((prev) => prev + 1);
+    const id = uuidv4();
 
     const devEl = document.createElement("div");
     devEl.textContent = input;
@@ -149,7 +148,7 @@ function UserCursorMovement({ name }: { name: string }) {
       name,
       type: "sticker",
       message: devEl.textContent as string,
-      stickerNo: totlaStickers,
+      stickerNo: id,
     };
     // socketProvider.get("message")?.send(JSON.stringify(data));
 
@@ -186,7 +185,7 @@ function UserCursorMovement({ name }: { name: string }) {
         name,
         type: "sticker",
         message: devEl?.textContent as string,
-        stickerNo: totlaStickers,
+        stickerNo: id,
       };
 
       handleStickerMovement(data);
@@ -208,7 +207,7 @@ function UserCursorMovement({ name }: { name: string }) {
           name,
           type: "sticker",
           message: devEl.textContent as string,
-          stickerNo: totlaStickers,
+          stickerNo: id,
         };
 
         handleStickerMovement(data);
@@ -233,7 +232,7 @@ function UserCursorMovement({ name }: { name: string }) {
           name,
           type: "sticker",
           message: devEl.textContent as string,
-          stickerNo: totlaStickers,
+          stickerNo: id,
         };
 
         handleStickerMovement(data);
@@ -254,7 +253,7 @@ function UserCursorMovement({ name }: { name: string }) {
           name,
           type: "sticker",
           message: devEl.textContent as string,
-          stickerNo: totlaStickers,
+          stickerNo: id,
         };
 
         handleStickerMovement(data);
@@ -288,6 +287,14 @@ function UserCursorMovement({ name }: { name: string }) {
     devEl.addEventListener("keydown", (e) => {
       if (e.key === "Delete") {
         devEl.remove();
+        const data = {
+          name,
+          type: "delete",
+          message: devEl.textContent as string,
+          stickerNo: id,
+        };
+
+        handleStickerMovement(data);
       } else if (e.key === "Escape" || e.key === "Enter") {
         devEl.blur();
       }

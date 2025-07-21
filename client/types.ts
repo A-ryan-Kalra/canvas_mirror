@@ -24,7 +24,7 @@ export interface StickerDetailProps {
   height: number;
   name: string;
   type: string;
-  stickerNo: number;
+  stickerNo: string;
   message?: string;
 }
 
@@ -36,7 +36,7 @@ export interface StickerMovementProps {
     height: number;
     name: string;
     type: string;
-    stickerNo: number;
+    stickerNo: string;
     message?: string;
   };
 }
