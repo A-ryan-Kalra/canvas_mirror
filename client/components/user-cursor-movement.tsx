@@ -9,7 +9,7 @@ function UserCursorMovement({ name }: { name: string }) {
   const [messages, setMessages] = useState({ message: "", name: "" });
   const [stopMessageSocket, setStopMessageSocket] = useState(false);
   const { socketProvider } = useSocket();
-  const [show, setShowInput] = useState<boolean>(false);
+  const [showInput, setShowInput] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [userCursor, setUserCursor] = useState<{
@@ -26,6 +26,7 @@ function UserCursorMovement({ name }: { name: string }) {
 
   useEffect(() => {
     // socket.readyState === WebSocket.OPEN;
+
     const stickerSocket = new WebSocket(
       `ws://localhost:8000/ws/sticker/${roomId}?name=${name}`
     );
@@ -45,6 +46,7 @@ function UserCursorMovement({ name }: { name: string }) {
       const target = event.target as HTMLElement;
 
       if (target.classList.contains("dynamic-input")) {
+        setShowInput(false);
         return;
       }
 
@@ -81,7 +83,7 @@ function UserCursorMovement({ name }: { name: string }) {
 
     return () => {
       stickerSocket.close();
-      // window.removeEventListener("mousemove", handleMouseMove);
+
       window.removeEventListener("mousedown", handleMouseDown);
     };
   }, [socketProvider]);
@@ -92,8 +94,6 @@ function UserCursorMovement({ name }: { name: string }) {
         const data = { name, message: input };
 
         socketProvider.get("message")!.send(JSON.stringify(data));
-
-        // setInput("");
       }
     };
     sendMessage();
@@ -114,7 +114,8 @@ function UserCursorMovement({ name }: { name: string }) {
     devEl.textContent = input;
 
     devEl.style.minWidth = "50px";
-    devEl.style.maxWidth = "100px";
+    devEl.style.maxWidth = "150px";
+    // devEl.style.maxHeight = "100px";
     devEl.style.resize = "both";
     devEl.contentEditable = "true";
     devEl.setAttribute("placeholder", "Max 30 words");
@@ -165,8 +166,34 @@ function UserCursorMovement({ name }: { name: string }) {
     });
     let clearMessageSocketTimer: number = 0;
 
-    devEl.addEventListener("keydown", () => {
+    devEl.addEventListener("keydown", (e) => {
+      console.log(e);
       setStopMessageSocket(true);
+      const allowedKeys = [
+        "Backspace",
+        "Enter",
+        "ArrowLeft",
+        "ArrowRight",
+        "ArrowUp",
+        "ArrowDown",
+      ];
+      const shortcuts =
+        (e.metaKey || e.ctrlKey) &&
+        ["a", "c", "v"].includes(e.key.toLowerCase());
+
+      const allowed = allowedKeys.includes(e.key) || shortcuts;
+      if (devEl.textContent && devEl.textContent.length > 29 && !allowed) {
+        if (clearMessageSocketTimer) {
+          clearTimeout(clearMessageSocketTimer);
+        }
+        clearMessageSocketTimer = setTimeout(() => {
+          setStopMessageSocket(false);
+        }, 500);
+
+        e.preventDefault();
+        return;
+      }
+
       const now = Date.now();
       if (now - lastSent < 20) return;
       if (clearMessageSocketTimer) {
@@ -297,6 +324,7 @@ function UserCursorMovement({ name }: { name: string }) {
         handleStickerMovement(data);
       } else if (e.key === "Escape" || e.key === "Enter") {
         devEl.blur();
+        // devEl.appendChild(document.createElement("br"));
       }
       if (window.innerWidth < 1024) {
         if (e.key === "Backspace" && devEl.textContent?.trim() === "") {
@@ -307,7 +335,7 @@ function UserCursorMovement({ name }: { name: string }) {
   };
 
   return (
-    show && (
+    showInput && (
       <form onSubmit={handleInput}>
         <input
           onKeyDown={(e) => {
