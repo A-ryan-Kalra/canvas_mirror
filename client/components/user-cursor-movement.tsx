@@ -8,6 +8,7 @@ function UserCursorMovement({ name }: { name: string }) {
   const { roomId } = useParams();
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState({ message: "", name: "" });
+  const [stopMessageSocket, setStopMessageSocket] = useState(false);
   const { socketProvider } = useSocket();
   const [show, setShowInput] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -29,7 +30,7 @@ function UserCursorMovement({ name }: { name: string }) {
     const stickerSocket = new WebSocket(
       `ws://localhost:8000/ws/sticker/${roomId}?name=${name}`
     );
-    socketProvider.set("sticker", stickerSocket);
+
     console.log(socketProvider.get("sticker"));
     stickerSocket.onclose = () => {
       console.log("Sticker Move Socket connection closed");
@@ -40,11 +41,6 @@ function UserCursorMovement({ name }: { name: string }) {
     stickerSocket.onmessage = (event: MessageEvent) => {
       const parsed = JSON.parse(event.data);
       console.log("Sticker Move Data", parsed);
-      const x = (parsed.left / parsed.width) * window.innerWidth;
-      const y = (parsed.top / parsed.height) * window.innerHeight;
-
-      console.log(x);
-      console.log(y);
     };
     const handleMouseDown = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
@@ -107,8 +103,6 @@ function UserCursorMovement({ name }: { name: string }) {
     //  setUserCursor(data);
     const stickerMovement = socketProvider.get("cursor");
     if (stickerMovement && stickerMovement.readyState === WebSocket.OPEN) {
-      // console.log(data);
-
       stickerMovement.send(JSON.stringify(data));
       //  lastSent = now;
     }
@@ -154,7 +148,7 @@ function UserCursorMovement({ name }: { name: string }) {
       height: window.innerHeight,
       name,
       type: "sticker",
-      message: input,
+      message: devEl.textContent as string,
       stickerNo: totlaStickers,
     };
     // socketProvider.get("message")?.send(JSON.stringify(data));
@@ -162,12 +156,42 @@ function UserCursorMovement({ name }: { name: string }) {
     handleStickerMovement(data);
     setInput("");
     setShowInput(false);
+    let lastSent = 0;
+
     devEl.addEventListener("mousedown", (e) => {
       isDragging = true;
       offsetX = e.clientX - devEl.offsetLeft;
       offsetY = e.clientY - devEl.offsetTop;
     });
-    let lastSent = 0;
+    let clearMessageSocketTimer: number = 0;
+
+    devEl.addEventListener("keydown", () => {
+      setStopMessageSocket(true);
+      const now = Date.now();
+      if (now - lastSent < 20) return;
+      if (clearMessageSocketTimer) {
+        clearTimeout(clearMessageSocketTimer);
+      }
+      clearMessageSocketTimer = setTimeout(() => {
+        // alert("wow");
+        setStopMessageSocket(false);
+      }, 1000);
+
+      const react = devEl.getBoundingClientRect();
+      const data = {
+        x: react.left,
+        y: react.top,
+        width: window.innerWidth,
+        height: window.innerHeight,
+        name,
+        type: "sticker",
+        message: devEl?.textContent as string,
+        stickerNo: totlaStickers,
+      };
+
+      handleStickerMovement(data);
+      lastSent = now;
+    });
 
     const handleMouseMove = (event: MouseEvent) => {
       if (isDragging) {
@@ -183,7 +207,7 @@ function UserCursorMovement({ name }: { name: string }) {
           height: window.innerHeight,
           name,
           type: "sticker",
-          message: input,
+          message: devEl.textContent as string,
           stickerNo: totlaStickers,
         };
 
@@ -208,7 +232,7 @@ function UserCursorMovement({ name }: { name: string }) {
           height: window.innerHeight,
           name,
           type: "sticker",
-          message: input,
+          message: devEl.textContent as string,
           stickerNo: totlaStickers,
         };
 
@@ -221,8 +245,7 @@ function UserCursorMovement({ name }: { name: string }) {
         const touch = e.touches[0];
         devEl.style.left = `${touch.clientX}px`;
         devEl.style.top = `${touch.clientY}px`;
-        console.log("touch.clientX  ", touch.clientX);
-        console.log("Hello ", offsetX);
+
         const data = {
           x: touch.clientX - offsetX,
           y: touch.clientY - offsetY,
@@ -230,7 +253,7 @@ function UserCursorMovement({ name }: { name: string }) {
           height: window.innerHeight,
           name,
           type: "sticker",
-          message: input,
+          message: devEl.textContent as string,
           stickerNo: totlaStickers,
         };
 
@@ -261,10 +284,11 @@ function UserCursorMovement({ name }: { name: string }) {
     document.addEventListener("mouseup", () => {
       isDragging = false;
     });
+
     devEl.addEventListener("keydown", (e) => {
       if (e.key === "Delete") {
         devEl.remove();
-      } else if (e.key === "Escape") {
+      } else if (e.key === "Escape" || e.key === "Enter") {
         devEl.blur();
       }
       if (window.innerWidth < 1024) {
@@ -282,7 +306,7 @@ function UserCursorMovement({ name }: { name: string }) {
           onKeyDown={(e) => {
             if (e.key === "Escape") {
               setShowInput(false);
-              setInput("false");
+              setInput("");
             }
           }}
           maxLength={30}
@@ -302,7 +326,12 @@ function UserCursorMovement({ name }: { name: string }) {
               ((userCursor.y - 25) / userCursor.height) * window.innerHeight
             }px)`,
           }}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={(e) => {
+            if (!stopMessageSocket) {
+              console.log("wut");
+              setInput(e.target.value);
+            }
+          }}
           type="text"
           value={input}
           className="  border-none outline-none text-sm p-1 left-12 bg-black/10"
