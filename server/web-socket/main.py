@@ -1,6 +1,6 @@
 import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from .schemas import user, cursorMovement
+from .schemas import user, cursorMovement, stickerMovement
 from typing import Dict, List
 
 # from fastapi.responses import HTMLResponse
@@ -86,6 +86,27 @@ async def track_cursor(websocket: WebSocket, room: int):
         user.disconnect(websocket, room, name)
         cursorMovement.disconnect(websocket, room, name)
         await cursorMovement.broadcast(
+            f"Client Id {name} left the chat.", room, websocket, name
+        )
+
+
+@app.websocket("/ws/sticker/{room}")
+async def track_cursor(websocket: WebSocket, room: int):
+    # await websocket.accept()
+
+    name = websocket.query_params.get("name")
+    await stickerMovement.connect(websocket, room, name)
+    try:
+        while True:
+            data = await websocket.receive_text()
+
+            await stickerMovement.broadcast(data, room, name, websocket)
+
+    except Exception as error:
+        print(f"\nSomething went wrong {websocket} \n", error)
+        user.disconnect(websocket, room, name)
+        stickerMovement.disconnect(websocket, room, name)
+        await stickerMovement.broadcast(
             f"Client Id {name} left the chat.", room, websocket, name
         )
 

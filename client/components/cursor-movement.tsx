@@ -1,16 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { useSocket } from "../services/use-socket-provider";
-
-export interface CursorMovementProps {
-  position: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    name: string;
-  };
-}
+import type { CursorMovementProps } from "../types";
 
 function CursorMovement({ position }: CursorMovementProps) {
   const socketRef = useRef<WebSocket>(null);
@@ -79,7 +70,7 @@ function CursorMovement({ position }: CursorMovementProps) {
         borderRadius: "23px",
         pointerEvents: "none",
         zIndex: 99999,
-        transition: "transform 0.02s ease-in-out",
+        // transition: "transform 0.04s ease-in-out",
         transform: `translate(${
           ((position.x - 25) / position.width) * window.innerWidth
         }px, ${((position.y - 25) / position.height) * window.innerHeight}px)`,

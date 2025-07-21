@@ -3,14 +3,12 @@ import CursorMovement from "../components/cursor-movement";
 import UserCursorMovement from "../components/user-cursor-movement";
 import { useSocket } from "../services/use-socket-provider";
 import { useLocation, useParams } from "react-router-dom";
-
-export interface UserDetailsProps {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  name: string;
-}
+import StickerMovement from "../components/sticker-movement";
+import type {
+  StickerDetailProps,
+  StickerMovementProps,
+  UserDetailsProps,
+} from "../types";
 
 function PlayArea() {
   // const socketRef = useRef<WebSocket>(null);
@@ -21,15 +19,10 @@ function PlayArea() {
   const { socketProvider } = useSocket();
   const [show, setShowInput] = useState<boolean>(false);
 
-  const [userData, setUserData] = useState<UserDetailsProps[]>([
-    {
-      x: 0,
-      y: 0,
-      width: 0,
-      height: 0,
-      name: name ?? "",
-    },
-  ]);
+  const [userData, setUserData] = useState<UserDetailsProps[]>([]);
+  const [stickerMovement, setStickerMovement] = useState<StickerDetailProps[]>(
+    []
+  );
 
   useEffect(() => {
     const ws = new WebSocket(
@@ -79,27 +72,49 @@ function PlayArea() {
       };
 
       socketCursor.onmessage = (event: MessageEvent) => {
-        const incomming: UserDetailsProps = JSON.parse(event.data);
+        const incomming = JSON.parse(event.data);
 
-        setUserData((prev: UserDetailsProps[]) => {
-          const existingIndex = prev.findIndex(
-            (user) => user.name == incomming.name
-          );
+        if (incomming.name === name) {
+          return;
+        }
 
-          if (existingIndex !== -1) {
-            const updated = [...prev];
-            updated[existingIndex] = incomming;
-            return updated;
-          } else {
-            return [...prev, incomming];
-          }
-        });
+        if (incomming.type === "sticker") {
+          setStickerMovement((prev: StickerDetailProps[]) => {
+            const existingIndex = prev.findIndex(
+              (user) =>
+                user.name === incomming.name &&
+                user.stickerNo === incomming.stickerNo
+            );
+
+            if (existingIndex !== -1) {
+              const updated = [...prev];
+              updated[existingIndex] = incomming;
+              return updated;
+            } else {
+              return [...prev, incomming];
+            }
+          });
+        } else {
+          setUserData((prev: UserDetailsProps[]) => {
+            const existingIndex = prev.findIndex(
+              (user) => user.name == incomming.name
+            );
+
+            if (existingIndex !== -1) {
+              const updated = [...prev];
+              updated[existingIndex] = incomming;
+              return updated;
+            } else {
+              return [...prev, incomming];
+            }
+          });
+        }
       };
     }
 
     const handleMouseMove = (event: MouseEvent) => {
       const now = Date.now();
-      if (now - lastSent < 20) return;
+      if (now - lastSent < 10) return;
 
       const data = {
         x: event.clientX,
@@ -107,6 +122,7 @@ function PlayArea() {
         width: window.innerWidth,
         height: window.innerHeight,
         name,
+        type: "cursor",
       };
       //  setUserCursor(data);
 
@@ -119,24 +135,6 @@ function PlayArea() {
     };
 
     window.addEventListener("mousemove", handleMouseMove);
-    // socket!.onclose = () => {
-    //   console.log(`${name} left the chat room.`);
-    // };
-
-    // socket!.onmessage = (event: MessageEvent<WebSocket>) => {
-    //   setMessages(event.data as unknown as string);
-    // };
-    // socket!.onopen = () => {
-    //   console.log(`Successfully established the connection.`);
-    //   socket?.send(`${name} entered the room.`);
-    // };
-
-    // window.addEventListener("keydown", () => sendMessage(input));
-
-    // return () => {
-    //   socket?.close();
-    //   // window.removeEventListener("keydown", () => sendMessage(input));
-    // };
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
@@ -145,12 +143,22 @@ function PlayArea() {
     };
   }, []);
 
+  // useEffect(() => {
+  //   const stickerSocket = socketProvider.get("sticker");
+  //   console.log("stickerSocket", stickerSocket);
+  // }, [socketProvider.get("sticker")]);
+
   // let date = new Date().getMilliseconds();
+
   return (
     <div className="p-2 flex flex-col ">
       {userData.length > 0 &&
         userData.map((data: UserDetailsProps, index) => (
           <CursorMovement position={{ ...data }} key={index} />
+        ))}
+      {stickerMovement.length > 0 &&
+        stickerMovement.map((data: StickerDetailProps, index) => (
+          <StickerMovement position={{ ...data }} key={index} />
         ))}
       {show && <UserCursorMovement name={name ?? ""} />}
       <h1 className="text-2xl">Fast Api Websocket Chats</h1>

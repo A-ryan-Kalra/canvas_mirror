@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useParams } from "react-router-dom";
 import { useSocket } from "../services/use-socket-provider";
+import type { StickerDetailProps } from "../types";
 
 function UserCursorMovement({ name }: { name: string }) {
+  let [totlaStickers, setTotalStickers] = useState(1);
   const { roomId } = useParams();
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState({ message: "", name: "" });
@@ -23,9 +25,27 @@ function UserCursorMovement({ name }: { name: string }) {
   });
 
   useEffect(() => {
-    var clear: number;
-
     // socket.readyState === WebSocket.OPEN;
+    const stickerSocket = new WebSocket(
+      `ws://localhost:8000/ws/sticker/${roomId}?name=${name}`
+    );
+    socketProvider.set("sticker", stickerSocket);
+    console.log(socketProvider.get("sticker"));
+    stickerSocket.onclose = () => {
+      console.log("Sticker Move Socket connection closed");
+    };
+    stickerSocket.onerror = (err) => {
+      console.error("Sticker Socket error:", err);
+    };
+    stickerSocket.onmessage = (event: MessageEvent) => {
+      const parsed = JSON.parse(event.data);
+      console.log("Sticker Move Data", parsed);
+      const x = (parsed.left / parsed.width) * window.innerWidth;
+      const y = (parsed.top / parsed.height) * window.innerHeight;
+
+      console.log(x);
+      console.log(y);
+    };
     const handleMouseDown = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
 
@@ -43,9 +63,7 @@ function UserCursorMovement({ name }: { name: string }) {
         setInput("");
         setShowInput(true);
 
-        // clearTimeout(clear);
-
-        clear = setTimeout(() => {
+        setTimeout(() => {
           inputRef?.current?.focus();
         }, 0);
       }
@@ -67,6 +85,7 @@ function UserCursorMovement({ name }: { name: string }) {
     window.addEventListener("mousedown", handleMouseDown);
 
     return () => {
+      stickerSocket.close();
       // window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mousedown", handleMouseDown);
     };
@@ -84,9 +103,19 @@ function UserCursorMovement({ name }: { name: string }) {
     };
     sendMessage();
   }, [input]);
+  function handleStickerMovement(data: StickerDetailProps) {
+    //  setUserCursor(data);
+    const stickerMovement = socketProvider.get("cursor");
+    if (stickerMovement && stickerMovement.readyState === WebSocket.OPEN) {
+      // console.log(data);
 
+      stickerMovement.send(JSON.stringify(data));
+      //  lastSent = now;
+    }
+  }
   const handleInput = (event: FormEvent) => {
     event.preventDefault();
+    setTotalStickers((prev) => prev + 1);
 
     const devEl = document.createElement("div");
     devEl.textContent = input;
@@ -96,12 +125,12 @@ function UserCursorMovement({ name }: { name: string }) {
     devEl.style.resize = "both";
     devEl.contentEditable = "true";
     devEl.setAttribute("placeholder", "Max 30 words");
-    devEl.style.whiteSpace = "pre-wrap";
+    devEl.style.whiteSpace = "wrap";
     devEl.style.wordBreak = "break-word";
     devEl.style.overflowWrap = "break-word";
     devEl.style.border = "none";
-    devEl.style.borderRadius = "10px";
     devEl.style.outline = "none";
+    devEl.style.borderRadius = "10px";
     devEl.style.padding = "0.55rem";
     devEl.spellcheck = false;
 
@@ -124,10 +153,13 @@ function UserCursorMovement({ name }: { name: string }) {
       width: window.innerWidth,
       height: window.innerHeight,
       name,
+      type: "sticker",
       message: input,
+      stickerNo: totlaStickers,
     };
-    socketProvider.get("message")?.send(JSON.stringify(data));
+    // socketProvider.get("message")?.send(JSON.stringify(data));
 
+    handleStickerMovement(data);
     setInput("");
     setShowInput(false);
     devEl.addEventListener("mousedown", (e) => {
@@ -135,30 +167,91 @@ function UserCursorMovement({ name }: { name: string }) {
       offsetX = e.clientX - devEl.offsetLeft;
       offsetY = e.clientY - devEl.offsetTop;
     });
+    let lastSent = 0;
 
-    document.addEventListener("mousemove", (e) => {
+    const handleMouseMove = (event: MouseEvent) => {
       if (isDragging) {
-        // console.log(e.clientX - offsetX);
-        // console.log(e.clientY - offsetY);
-        devEl.style.left = `${e.clientX - offsetX}px`;
-        devEl.style.top = `${e.clientY - offsetY}px`;
+        const now = Date.now();
+        // if (now - lastSent < 20) return;
+        devEl.style.left = `${event.clientX - offsetX}px`;
+        devEl.style.top = `${event.clientY - offsetY}px`;
+
+        const data = {
+          x: event.clientX - offsetX,
+          y: event.clientY - offsetY,
+          width: window.innerWidth,
+          height: window.innerHeight,
+          name,
+          type: "sticker",
+          message: input,
+          stickerNo: totlaStickers,
+        };
+
+        handleStickerMovement(data);
       }
-    });
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+
     devEl.addEventListener("touchstart", (e: TouchEvent) => {
       if (e.touches.length > 0) {
-        const touch = e.touches[0];
+        // const touch = e.touches[0];
         const react = devEl.getBoundingClientRect();
-        offsetX = touch.clientX - react.left;
-        offsetY = touch.clientY - react.top;
+
+        // offsetX = touch.clientX - react.left;
+        // offsetY = touch.clientY - react.top;
         isDragging = true;
+        const data = {
+          x: react.left,
+          y: react.top,
+          width: window.innerWidth,
+          height: window.innerHeight,
+          name,
+          type: "sticker",
+          message: input,
+          stickerNo: totlaStickers,
+        };
+
+        handleStickerMovement(data);
       }
     });
 
     document.addEventListener("touchmove", (e) => {
       if (isDragging && e.touches.length > 0) {
         const touch = e.touches[0];
-        devEl.style.left = `${touch.clientX - offsetX}px`;
-        devEl.style.top = `${touch.clientY - offsetY}px`;
+        devEl.style.left = `${touch.clientX}px`;
+        devEl.style.top = `${touch.clientY}px`;
+        console.log("touch.clientX  ", touch.clientX);
+        console.log("Hello ", offsetX);
+        const data = {
+          x: touch.clientX - offsetX,
+          y: touch.clientY - offsetY,
+          width: window.innerWidth,
+          height: window.innerHeight,
+          name,
+          type: "sticker",
+          message: input,
+          stickerNo: totlaStickers,
+        };
+
+        handleStickerMovement(data);
+        const now = Date.now();
+        if (now - lastSent < 10) return;
+        const cursorData = {
+          x: touch.clientX + 10 - offsetX,
+          y: touch.clientY - offsetY,
+          width: window.innerWidth,
+          height: window.innerHeight,
+          name,
+          type: "cursor",
+        };
+        const socketCursor = socketProvider.get("cursor");
+        if (socketCursor && socketCursor.readyState === WebSocket.OPEN) {
+          // console.log(data);
+
+          socketCursor.send(JSON.stringify(cursorData));
+          lastSent = now;
+        }
       }
     });
     document.addEventListener("touchend", () => {
