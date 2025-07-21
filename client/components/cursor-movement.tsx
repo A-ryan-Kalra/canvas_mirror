@@ -70,6 +70,7 @@ function CursorMovement({ position }: CursorMovementProps) {
         borderRadius: "23px",
         pointerEvents: "none",
         zIndex: 99999,
+        cursor: "none",
         // transition: "transform 0.04s ease-in-out",
         transform: `translate(${
           ((position.x - 25) / position.width) * window.innerWidth

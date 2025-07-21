@@ -78,7 +78,6 @@ function PlayArea() {
           return;
         }
         if (incomming.type === "delete") {
-          console.log("incomming", incomming);
           setStickerMovement((prev) =>
             prev.filter((user) => user.stickerNo !== incomming.stickerNo)
           );
@@ -157,7 +156,6 @@ function PlayArea() {
   // }, [socketProvider.get("sticker")]);
 
   // let date = new Date().getMilliseconds();
-  console.log("stickerMovement=", stickerMovement);
 
   return (
     <div className="p-2 flex flex-col ">

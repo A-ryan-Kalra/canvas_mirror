@@ -13,11 +13,12 @@ function StickerMovement({ position }: StickerMovementProps) {
   // }, [window.innerHeight]);
   return (
     <div
+      data-name={position.name}
       contentEditable={true}
       spellCheck={false}
       style={{
         minWidth: "50px",
-        maxWidth: "100px",
+        maxWidth: "200px",
         resize: "both",
         // whiteSpace: "wrap",
         wordBreak: "break-word",
@@ -28,10 +29,11 @@ function StickerMovement({ position }: StickerMovementProps) {
         background: "rgba(37, 235, 221, 0.6)",
         cursor: "grab",
         position: "fixed",
+        zIndex: 99999,
         left: `${(position.x / position.width) * window.innerWidth}px`,
         top: `${(position.y / position.height) * window.innerHeight}px`,
       }}
-      className="dynamic-input"
+      className="dynamic-input before:content-[attr(data-name)] before:absolute before:max-w-[100px] before:h-fit before:bg-purple-500 before:font-semibold before:text-white before:font-mono before:-top-6 before:left-0.5 before:rounded-sm before:p-1 before:z-0 before:text-[10px] before:tracking-wide before:truncate"
       dangerouslySetInnerHTML={{ __html: position.message as string }}
     >
       {/* {position.message} */}

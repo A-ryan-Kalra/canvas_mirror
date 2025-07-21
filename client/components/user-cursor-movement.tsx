@@ -125,6 +125,7 @@ function UserCursorMovement({ name }: { name: string }) {
     devEl.style.outline = "none";
     devEl.style.borderRadius = "10px";
     devEl.style.padding = "0.55rem";
+    devEl.style.zIndex = "99999";
     devEl.spellcheck = false;
 
     devEl.style.background = "rgba(37, 235, 221, 0.6)";
@@ -172,9 +173,8 @@ function UserCursorMovement({ name }: { name: string }) {
         clearTimeout(clearMessageSocketTimer);
       }
       clearMessageSocketTimer = setTimeout(() => {
-        // alert("wow");
         setStopMessageSocket(false);
-      }, 1000);
+      }, 500);
 
       const react = devEl.getBoundingClientRect();
       const data = {
