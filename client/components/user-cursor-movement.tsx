@@ -328,7 +328,6 @@ function UserCursorMovement({ name }: { name: string }) {
           }}
           onChange={(e) => {
             if (!stopMessageSocket) {
-              console.log("wut");
               setInput(e.target.value);
             }
           }}
