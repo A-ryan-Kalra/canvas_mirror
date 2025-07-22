@@ -167,7 +167,6 @@ function UserCursorMovement({ name }: { name: string }) {
     let clearMessageSocketTimer: number = 0;
 
     devEl.addEventListener("keydown", (e) => {
-      console.log(e);
       setStopMessageSocket(true);
       const allowedKeys = [
         "Backspace",

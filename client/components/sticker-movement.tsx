@@ -1,25 +1,21 @@
-import type { StickerMovementProps, UserDetailsProps } from "../types";
+import { useRef } from "react";
+import type { StickerMovementProps } from "../types";
 
 function StickerMovement({ position }: StickerMovementProps) {
-  // const [stickPos, setStickPos] = useState<{ x: number; y: number }>({
-  //   x: 0,
-  //   y: 0,
-  // });
-  // // useEffect(() => {
-  //   setStickPos({
-  //     x: (position.x / position.width) * window.innerWidth,
-  //     y: (position.y / position.height) * window.innerWidth,
-  //   });
-  // }, [window.innerHeight]);
+  const stickerRef = useRef<HTMLDivElement>(null);
+  // const [moveStickerPos,setMoveStickerPos]=useState<{x:number,y:number}>({})
+
   return (
     <div
+      ref={stickerRef}
       data-name={position.name}
-      contentEditable={true}
+      // contentEditable={true}
       spellCheck={false}
       style={{
         minWidth: "50px",
         maxWidth: "200px",
-        resize: "both",
+        maxHeight: "100px",
+        // resize: "both",
         // whiteSpace: "wrap",
         wordBreak: "break-word",
         border: "none",
@@ -34,9 +30,9 @@ function StickerMovement({ position }: StickerMovementProps) {
         top: `${(position.y / position.height) * window.innerHeight}px`,
       }}
       className="dynamic-input before:content-[attr(data-name)] before:absolute before:max-w-[100px] before:h-fit before:bg-purple-500 before:font-semibold before:text-white before:font-mono before:-top-6 before:left-0.5 before:rounded-sm before:p-1 before:z-0 before:text-[10px] before:tracking-wide before:truncate"
-      dangerouslySetInnerHTML={{ __html: position.message as string }}
+      // dangerouslySetInnerHTML={{ __html: position.message as string }}
     >
-      {/* {position.message} */}
+      {position.message}
     </div>
   );
 }
