@@ -32,119 +32,126 @@ function PlayArea() {
   ]);
 
   useEffect(() => {
-    const ws = new WebSocket(
-      `ws://localhost:8000/ws/message/${roomId}?name=${name}`
+    // --- CONNECTION SOCKET ---
+    const connectSocket = new WebSocket(
+      `ws://localhost:8000/ws/${roomId}?name=${name}`
     );
-    // const ws = new WebSocket(
-    //   `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/message/${roomId}?name=${name}`
-    // );
-    socketProvider.set("message", ws);
-    const socket = socketProvider.get("message");
+    socketProvider.set("connect", connectSocket);
+    const connectSocketProvider = socketProvider.get("connect");
 
-    if (socket) {
-      socket!.onopen = () => {
-        setShowInput(true);
-        console.log(`Successfully established the connection.`);
-        const data = { name, message: `${name} entered the room.` };
-        socket?.send(JSON.stringify(data));
+    if (connectSocketProvider) {
+      connectSocketProvider.onopen = () => {
+        console.log("Connect socket opened.");
+        connectSocketProvider.send(
+          JSON.stringify({ name, message: `${name} entered the room.` })
+        );
       };
-      socket!.onclose = () => {
-        console.log(`${name} left the chat room.`);
+
+      connectSocketProvider.onmessage = (event: MessageEvent) => {
+        const parsed = JSON.parse(event.data);
+        console.log("Connect socket message:", parsed);
+      };
+
+      connectSocketProvider.onclose = () => {
+        console.log("Connect socket closed.");
+      };
+
+      connectSocketProvider.onerror = (err) => {
+        console.error("Connect socket error:", err);
       };
     }
+
+    // ---MESSAGE SOCKET ---
+    const messageSocket = new WebSocket(
+      `ws://localhost:8000/ws/message/${roomId}/messageRoom?name=${name}`
+    );
+    socketProvider.set("message", messageSocket);
+
+    messageSocket.onopen = () => {
+      console.log("Message socket opened.");
+      setShowInput(true);
+      messageSocket.send(
+        JSON.stringify({ name, message: `${name} entered the room.` })
+      );
+    };
+
+    messageSocket.onmessage = (event: MessageEvent) => {
+      const parsed = JSON.parse(event.data);
+      console.log("Message socket message:", parsed);
+    };
+
+    messageSocket.onclose = () => {
+      console.log("Message socket closed.");
+    };
+
+    messageSocket.onerror = (err) => {
+      console.error("Message socket error:", err);
+    };
+
+    // ---CURSOR SOCKET---
 
     let lastSent = 0;
-    // const ws1 = new WebSocket(
-    //   `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/cursor/${roomId}?name=${name}`
-    // );
-    const ws1 = new WebSocket(
-      `ws://localhost:8000/ws/cursor/${roomId}?name=${name}`
+    const cursorSocket = new WebSocket(
+      `ws://localhost:8000/ws/cursor/${roomId}/cursorRoom?name=${name}`
     );
+    // `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/cursor/${roomId}?name=${name}`
+    socketProvider.set("cursor", cursorSocket);
 
-    socketProvider.set("cursor", ws1);
-    const socketCursor = socketProvider.get("cursor");
+    cursorSocket.onopen = () => {
+      console.log("Cursor socket opened.");
+    };
 
-    if (socketCursor) {
-      socketCursor.onclose = () => {
-        console.log("SocketRef.current closed.");
-        // Optionally: attempt reconnect
-      };
+    cursorSocket.onmessage = (event: MessageEvent) => {
+      const incoming: UserDetailsProps = JSON.parse(event.data);
 
-      socketCursor.onerror = (err) => {
-        console.error("SocketRef.current error:", err);
-      };
+      setUserData((prev) => {
+        const existingIndex = prev.findIndex(
+          (user) => user.name === incoming.name
+        );
+        if (existingIndex !== -1) {
+          const updated = [...prev];
+          updated[existingIndex] = incoming;
+          return updated;
+        }
+        return [...prev, incoming];
+      });
+    };
 
-      socketCursor.onopen = () => {
-        console.log("Socket opened.");
-      };
+    cursorSocket.onclose = () => {
+      console.log("Cursor socket closed.");
+    };
 
-      socketCursor.onmessage = (event: MessageEvent) => {
-        const incomming: UserDetailsProps = JSON.parse(event.data);
-
-        setUserData((prev: UserDetailsProps[]) => {
-          console.log("prev", prev);
-          const existingIndex = prev.findIndex(
-            (user) => user.name == incomming.name
-          );
-
-          if (existingIndex !== -1) {
-            const updated = [...prev];
-            updated[existingIndex] = incomming;
-            return updated;
-          } else {
-            return [...prev, incomming];
-          }
-        });
-      };
-    }
+    cursorSocket.onerror = (err) => {
+      console.error("Cursor socket error:", err);
+    };
 
     const handleMouseMove = (event: MouseEvent) => {
       const now = Date.now();
       if (now - lastSent < 20) return;
 
-      const data = {
+      const cursorData = {
         x: event.clientX,
         y: event.clientY,
         width: window.innerWidth,
         height: window.innerHeight,
         name,
       };
-      //  setUserCursor(data);
 
-      if (socketCursor && socketCursor.readyState === WebSocket.OPEN) {
-        // console.log(data);
-
-        socketCursor.send(JSON.stringify(data));
+      if (cursorSocket.readyState === WebSocket.OPEN) {
+        cursorSocket.send(JSON.stringify(cursorData));
         lastSent = now;
       }
     };
 
     window.addEventListener("mousemove", handleMouseMove);
-    // socket!.onclose = () => {
-    //   console.log(`${name} left the chat room.`);
-    // };
-
-    // socket!.onmessage = (event: MessageEvent<WebSocket>) => {
-    //   setMessages(event.data as unknown as string);
-    // };
-    // socket!.onopen = () => {
-    //   console.log(`Successfully established the connection.`);
-    //   socket?.send(`${name} entered the room.`);
-    // };
-
-    // window.addEventListener("keydown", () => sendMessage(input));
-
-    // return () => {
-    //   socket?.close();
-    //   // window.removeEventListener("keydown", () => sendMessage(input));
-    // };
 
     return () => {
+      connectSocket.close();
+      messageSocket.close();
+      cursorSocket.close();
       window.removeEventListener("mousemove", handleMouseMove);
-      socketCursor?.close();
-      socket?.close();
     };
-  }, []);
+  }, [roomId, name]);
 
   // let date = new Date().getMilliseconds();
   return (
