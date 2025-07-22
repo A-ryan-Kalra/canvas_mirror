@@ -18,7 +18,7 @@ function PlayArea() {
   const name = searchParams.get("name");
   const { socketProvider } = useSocket();
   const [show, setShowInput] = useState<boolean>(false);
-
+  const divRefs = useRef<HTMLDivElement[]>([]);
   const [userData, setUserData] = useState<UserDetailsProps[]>([]);
   const [stickerMovement, setStickerMovement] = useState<StickerDetailProps[]>(
     []
@@ -145,6 +145,13 @@ function PlayArea() {
       window.removeEventListener("mousemove", handleMouseMove);
       socketCursor?.close();
       socket?.close();
+
+      divRefs.current.forEach((div) => {
+        if (document.body.contains(div)) {
+          document.body.removeChild(div);
+        }
+      });
+      divRefs.current = [];
     };
   }, []);
 
@@ -154,7 +161,6 @@ function PlayArea() {
     );
 
     socketProvider.set("remove", removePlayerSocket);
-    console.log(socketProvider.get("remove"));
 
     removePlayerSocket.onopen = () => {
       console.log("Remove socket connection established");
@@ -170,7 +176,7 @@ function PlayArea() {
 
     removePlayerSocket.onmessage = (event: MessageEvent) => {
       const parsed = JSON.parse(event.data);
-      console.log("Remove Move Data", parsed);
+
       setStickerMovement((prev) =>
         prev.filter((user) => user.name !== parsed.name)
       );
@@ -217,7 +223,9 @@ function PlayArea() {
         stickerMovement.map((data: StickerDetailProps, index) => (
           <StickerMovement position={{ ...data }} key={index} />
         ))}
-      {show && <UserCursorMovement name={name ?? ""} />}
+      {show && (
+        <UserCursorMovement divRefs={divRefs.current ?? []} name={name ?? ""} />
+      )}
       <h1 className="text-2xl">Fast Api Websocket Chats</h1>
       <div className="flex flex-col gap-y-2">
         <button

@@ -3,7 +3,13 @@ import { useParams } from "react-router-dom";
 import { useSocket } from "../services/use-socket-provider";
 import type { StickerDetailProps } from "../types";
 import { v4 as uuidv4 } from "uuid";
-function UserCursorMovement({ name }: { name: string }) {
+function UserCursorMovement({
+  name,
+  divRefs,
+}: {
+  name: string;
+  divRefs: HTMLDivElement[];
+}) {
   const { roomId } = useParams();
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState({ message: "", name: "" });
@@ -93,32 +99,34 @@ function UserCursorMovement({ name }: { name: string }) {
     event.preventDefault();
     const id = uuidv4();
 
-    const devEl = document.createElement("div");
-    devEl.textContent = input;
+    const divEl = document.createElement("div");
+    divEl.textContent = input;
 
-    devEl.style.minWidth = "50px";
-    devEl.style.maxWidth = "150px";
-    // devEl.style.maxHeight = "100px";
-    devEl.style.resize = "both";
-    devEl.contentEditable = "true";
-    devEl.setAttribute("placeholder", "Max 30 words");
-    devEl.style.whiteSpace = "wrap";
-    devEl.style.wordBreak = "break-word";
-    devEl.style.overflowWrap = "break-word";
-    devEl.style.border = "none";
-    devEl.style.outline = "none";
-    devEl.style.borderRadius = "10px";
-    devEl.style.padding = "0.55rem";
-    devEl.style.zIndex = "99999";
-    devEl.spellcheck = false;
+    divEl.style.minWidth = "50px";
+    divEl.style.maxWidth = "150px";
+    // divEl.style.maxHeight = "100px";
+    divEl.style.resize = "both";
+    divEl.contentEditable = "true";
+    divEl.setAttribute("placeholder", "Max 30 words");
+    divEl.style.whiteSpace = "wrap";
+    divEl.style.wordBreak = "break-word";
+    divEl.style.overflowWrap = "break-word";
+    divEl.style.border = "none";
+    divEl.style.outline = "none";
+    divEl.style.borderRadius = "10px";
+    divEl.style.padding = "0.55rem";
+    divEl.style.zIndex = "99999";
+    divEl.spellcheck = false;
 
-    devEl.style.background = "rgba(37, 235, 221, 0.6)";
-    devEl.style.cursor = "grab";
-    devEl.style.position = "fixed";
-    devEl.style.left = `${userCursor.x}px`;
-    devEl.style.top = `${userCursor.y}px`;
-    devEl.className = "dynamic-input";
-    document.body.appendChild(devEl);
+    divEl.style.background = "rgba(37, 235, 221, 0.6)";
+    divEl.style.cursor = "grab";
+    divEl.style.position = "fixed";
+    divEl.style.left = `${userCursor.x}px`;
+    divEl.style.top = `${userCursor.y}px`;
+    divEl.className = "dynamic-input";
+
+    divRefs.push(divEl);
+    document.body.appendChild(divEl);
     // inputEl.focus();
 
     let isDragging = false;
@@ -132,7 +140,7 @@ function UserCursorMovement({ name }: { name: string }) {
       height: window.innerHeight,
       name,
       type: "sticker",
-      message: devEl.textContent as string,
+      message: divEl.textContent as string,
       stickerNo: id,
     };
     // socketProvider.get("message")?.send(JSON.stringify(data));
@@ -142,14 +150,14 @@ function UserCursorMovement({ name }: { name: string }) {
     setShowInput(false);
     let lastSent = 0;
 
-    devEl.addEventListener("mousedown", (e) => {
+    divEl.addEventListener("mousedown", (e) => {
       isDragging = true;
-      offsetX = e.clientX - devEl.offsetLeft;
-      offsetY = e.clientY - devEl.offsetTop;
+      offsetX = e.clientX - divEl.offsetLeft;
+      offsetY = e.clientY - divEl.offsetTop;
     });
     let clearMessageSocketTimer: number = 0;
 
-    devEl.addEventListener("keydown", (e) => {
+    divEl.addEventListener("keydown", (e) => {
       setStopMessageSocket(true);
       const allowedKeys = [
         "Backspace",
@@ -164,7 +172,7 @@ function UserCursorMovement({ name }: { name: string }) {
         ["a", "c", "v"].includes(e.key.toLowerCase());
 
       const allowed = allowedKeys.includes(e.key) || shortcuts;
-      if (devEl.textContent && devEl.textContent.length > 29 && !allowed) {
+      if (divEl.textContent && divEl.textContent.length > 29 && !allowed) {
         if (clearMessageSocketTimer) {
           clearTimeout(clearMessageSocketTimer);
         }
@@ -185,7 +193,7 @@ function UserCursorMovement({ name }: { name: string }) {
         setStopMessageSocket(false);
       }, 500);
 
-      const react = devEl.getBoundingClientRect();
+      const react = divEl.getBoundingClientRect();
       const data = {
         x: react.left,
         y: react.top,
@@ -193,7 +201,7 @@ function UserCursorMovement({ name }: { name: string }) {
         height: window.innerHeight,
         name,
         type: "sticker",
-        message: devEl?.textContent as string,
+        message: divEl?.textContent as string,
         stickerNo: id,
       };
 
@@ -205,8 +213,8 @@ function UserCursorMovement({ name }: { name: string }) {
       if (isDragging) {
         const now = Date.now();
         // if (now - lastSent < 20) return;
-        devEl.style.left = `${event.clientX - offsetX}px`;
-        devEl.style.top = `${event.clientY - offsetY}px`;
+        divEl.style.left = `${event.clientX - offsetX}px`;
+        divEl.style.top = `${event.clientY - offsetY}px`;
 
         const data = {
           x: event.clientX - offsetX,
@@ -215,7 +223,7 @@ function UserCursorMovement({ name }: { name: string }) {
           height: window.innerHeight,
           name,
           type: "sticker",
-          message: devEl.textContent as string,
+          message: divEl.textContent as string,
           stickerNo: id,
         };
 
@@ -225,10 +233,10 @@ function UserCursorMovement({ name }: { name: string }) {
 
     document.addEventListener("mousemove", handleMouseMove);
 
-    devEl.addEventListener("touchstart", (e: TouchEvent) => {
+    divEl.addEventListener("touchstart", (e: TouchEvent) => {
       if (e.touches.length > 0) {
         // const touch = e.touches[0];
-        const react = devEl.getBoundingClientRect();
+        const react = divEl.getBoundingClientRect();
 
         // offsetX = touch.clientX - react.left;
         // offsetY = touch.clientY - react.top;
@@ -240,7 +248,7 @@ function UserCursorMovement({ name }: { name: string }) {
           height: window.innerHeight,
           name,
           type: "sticker",
-          message: devEl.textContent as string,
+          message: divEl.textContent as string,
           stickerNo: id,
         };
 
@@ -251,8 +259,8 @@ function UserCursorMovement({ name }: { name: string }) {
     document.addEventListener("touchmove", (e) => {
       if (isDragging && e.touches.length > 0) {
         const touch = e.touches[0];
-        devEl.style.left = `${touch.clientX}px`;
-        devEl.style.top = `${touch.clientY}px`;
+        divEl.style.left = `${touch.clientX}px`;
+        divEl.style.top = `${touch.clientY}px`;
 
         const data = {
           x: touch.clientX - offsetX,
@@ -261,7 +269,7 @@ function UserCursorMovement({ name }: { name: string }) {
           height: window.innerHeight,
           name,
           type: "sticker",
-          message: devEl.textContent as string,
+          message: divEl.textContent as string,
           stickerNo: id,
         };
 
@@ -293,24 +301,24 @@ function UserCursorMovement({ name }: { name: string }) {
       isDragging = false;
     });
 
-    devEl.addEventListener("keydown", (e) => {
+    divEl.addEventListener("keydown", (e) => {
       if (e.key === "Delete") {
-        devEl.remove();
+        divEl.remove();
         const data = {
           name,
           type: "delete",
-          message: devEl.textContent as string,
+          message: divEl.textContent as string,
           stickerNo: id,
         };
 
         handleStickerMovement(data);
       } else if (e.key === "Escape" || e.key === "Enter") {
-        devEl.blur();
-        // devEl.appendChild(document.createElement("br"));
+        divEl.blur();
+        // divEl.appendChild(document.createElement("br"));
       }
       if (window.innerWidth < 1024) {
-        if (e.key === "Backspace" && devEl.textContent?.trim() === "") {
-          devEl.remove();
+        if (e.key === "Backspace" && divEl.textContent?.trim() === "") {
+          divEl.remove();
         }
       }
     });
