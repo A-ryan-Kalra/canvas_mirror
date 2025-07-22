@@ -22,15 +22,45 @@ def healthz():
     return {"message": "Healthy..."}
 
 
-async def handle_data(websocket: WebSocket, room: int, socketType: str):
+active_connections = []
+
+
+# @app.websocket("/ws")
+# async def websocket_endpoint(websocket: WebSocket):
+#     await websocket.accept()
+#     # active_connections.append(websocket)
+
+#     while True:
+#         data = await websocket.receive_text()
+#         await websocket.send_text(f"Message text is {data}")
+
+
+# @app.websocket("/ws/{client_id}")
+# async def websocket_endpoint(websocket: WebSocket, client_id: int):
+#     await manager.connect(websocket, client_id)
+#     try:
+#         while True:
+#             data = await websocket.receive_text()
+#             # await manager.send_personal_message(f"You wrote: {data}", websocket)
+#             await manager.broadcast(data, client_id)
+#     except WebSocketDisconnect:
+#         manager.disconnect(websocket, client_id)
+#         await manager.broadcast(f"Client Id {client_id} left the chat.", client_id)
+
+
+# rooms: Dict[str, List[WebSocket]] = {}
+@app.websocket("/ws/message/{room}")
+async def track_cursor(websocket: WebSocket, room: int):
+    # await websocket.accept()
+
     name = websocket.query_params.get("name")
-    # await user.connect(websocket, room, name, socketType)
-    await user.add_socket(websocket, room, name, socketType)
+    await user.connect(websocket, room, name)
 
     try:
         while True:
             data = await websocket.receive_text()
-            await user.broadcast(data, room, name, websocket, socketType)
+
+            await user.broadcast(data, room, websocket, name)
 
     except Exception as error:
         print(f"\nSomething went wrong {websocket} \n", error)
