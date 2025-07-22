@@ -3,14 +3,12 @@ import CursorMovement from "../components/cursor-movement";
 import UserCursorMovement from "../components/user-cursor-movement";
 import { useSocket } from "../services/use-socket-provider";
 import { useLocation, useParams } from "react-router-dom";
-
-export interface UserDetailsProps {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  name: string;
-}
+import StickerMovement from "../components/sticker-movement";
+import type {
+  StickerDetailProps,
+  StickerMovementProps,
+  UserDetailsProps,
+} from "../types";
 
 function PlayArea() {
   // const socketRef = useRef<WebSocket>(null);
@@ -20,125 +18,123 @@ function PlayArea() {
   const name = searchParams.get("name");
   const { socketProvider } = useSocket();
   const [show, setShowInput] = useState<boolean>(false);
-
-  const [userData, setUserData] = useState<UserDetailsProps[]>([
-    {
-      x: 0,
-      y: 0,
-      width: 0,
-      height: 0,
-      name: name ?? "",
-    },
-  ]);
+  const divRefs = useRef<HTMLDivElement[]>([]);
+  const [userData, setUserData] = useState<UserDetailsProps[]>([]);
+  const [stickerMovement, setStickerMovement] = useState<StickerDetailProps[]>(
+    []
+  );
 
   useEffect(() => {
-    // --- CONNECTION SOCKET ---
-    const connectSocket = new WebSocket(
-      `ws://localhost:8000/ws/${roomId}?name=${name}`
+    const ws = new WebSocket(
+      `ws://localhost:8000/ws/message/${roomId}?name=${name}`
     );
-    socketProvider.set("connect", connectSocket);
-    const connectSocketProvider = socketProvider.get("connect");
+    // const ws = new WebSocket(
+    //   `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/message/${roomId}?name=${name}`
+    // );
+    socketProvider.set("message", ws);
+    const socket = socketProvider.get("message");
 
-    if (connectSocketProvider) {
-      connectSocketProvider.onopen = () => {
-        console.log("Connect socket opened.");
-        connectSocketProvider.send(
-          JSON.stringify({ name, message: `${name} entered the room.` })
-        );
+    if (socket) {
+      socket!.onopen = () => {
+        setShowInput(true);
+        console.log(`Successfully established the connection.`);
+        const data = { name, message: `${name} entered the room.` };
+        socket?.send(JSON.stringify(data));
       };
-
-      connectSocketProvider.onmessage = (event: MessageEvent) => {
-        const parsed = JSON.parse(event.data);
-        console.log("Connect socket message:", parsed);
-      };
-
-      connectSocketProvider.onclose = () => {
-        console.log("Connect socket closed.");
-      };
-
-      connectSocketProvider.onerror = (err) => {
-        console.error("Connect socket error:", err);
+      socket!.onclose = () => {
+        console.log(`${name} left the chat room.`);
       };
     }
 
-    // ---MESSAGE SOCKET ---
-    const messageSocket = new WebSocket(
-      `ws://localhost:8000/ws/message/${roomId}/messageRoom?name=${name}`
-    );
-    socketProvider.set("message", messageSocket);
-
-    messageSocket.onopen = () => {
-      console.log("Message socket opened.");
-      setShowInput(true);
-      messageSocket.send(
-        JSON.stringify({ name, message: `${name} entered the room.` })
-      );
-    };
-
-    messageSocket.onmessage = (event: MessageEvent) => {
-      const parsed = JSON.parse(event.data);
-      console.log("Message socket message:", parsed);
-    };
-
-    messageSocket.onclose = () => {
-      console.log("Message socket closed.");
-    };
-
-    messageSocket.onerror = (err) => {
-      console.error("Message socket error:", err);
-    };
-
-    // ---CURSOR SOCKET---
-
     let lastSent = 0;
-    const cursorSocket = new WebSocket(
-      `ws://localhost:8000/ws/cursor/${roomId}/cursorRoom?name=${name}`
+    // const ws1 = new WebSocket(
+    //   `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/cursor/${roomId}?name=${name}`
+    // );
+    const socketCursor = new WebSocket(
+      `ws://localhost:8000/ws/cursor/${roomId}?name=${name}`
     );
-    // `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/cursor/${roomId}?name=${name}`
-    socketProvider.set("cursor", cursorSocket);
 
-    cursorSocket.onopen = () => {
-      console.log("Cursor socket opened.");
+    socketProvider.set("cursor", socketCursor);
+    // socketProvider.get("cursor");
+
+    socketCursor.onclose = () => {
+      console.log("SocketRef.current closed.");
+      // Optionally: attempt reconnect
     };
 
-    cursorSocket.onmessage = (event: MessageEvent) => {
-      const incoming: UserDetailsProps = JSON.parse(event.data);
+    socketCursor.onerror = (err) => {
+      console.error("SocketRef.current error:", err);
+    };
 
-      setUserData((prev) => {
-        const existingIndex = prev.findIndex(
-          (user) => user.name === incoming.name
+    socketCursor.onopen = () => {
+      console.log("Socket opened.");
+    };
+
+    socketCursor.onmessage = (event: MessageEvent) => {
+      const incomming = JSON.parse(event.data);
+
+      if (incomming.name === name) {
+        return;
+      }
+      if (incomming.type === "delete") {
+        setStickerMovement((prev) =>
+          prev.filter((user) => user.stickerNo !== incomming.stickerNo)
         );
-        if (existingIndex !== -1) {
-          const updated = [...prev];
-          updated[existingIndex] = incoming;
-          return updated;
-        }
-        return [...prev, incoming];
-      });
-    };
 
-    cursorSocket.onclose = () => {
-      console.log("Cursor socket closed.");
-    };
+        return;
+      }
 
-    cursorSocket.onerror = (err) => {
-      console.error("Cursor socket error:", err);
+      if (incomming.type === "sticker") {
+        setStickerMovement((prev: StickerDetailProps[]) => {
+          const existingIndex = prev.findIndex(
+            (user) =>
+              user.name === incomming.name &&
+              user.stickerNo === incomming.stickerNo
+          );
+
+          if (existingIndex !== -1) {
+            const updated = [...prev];
+            updated[existingIndex] = incomming;
+            return updated;
+          } else {
+            return [...prev, incomming];
+          }
+        });
+      } else {
+        setUserData((prev: UserDetailsProps[]) => {
+          const existingIndex = prev.findIndex(
+            (user) => user.name == incomming.name
+          );
+
+          if (existingIndex !== -1) {
+            const updated = [...prev];
+            updated[existingIndex] = incomming;
+            return updated;
+          } else {
+            return [...prev, incomming];
+          }
+        });
+      }
     };
 
     const handleMouseMove = (event: MouseEvent) => {
       const now = Date.now();
-      if (now - lastSent < 20) return;
+      if (now - lastSent < 10) return;
 
-      const cursorData = {
+      const data = {
         x: event.clientX,
         y: event.clientY,
         width: window.innerWidth,
         height: window.innerHeight,
         name,
+        type: "cursor",
       };
+      //  setUserCursor(data);
 
-      if (cursorSocket.readyState === WebSocket.OPEN) {
-        cursorSocket.send(JSON.stringify(cursorData));
+      if (socketCursor && socketCursor.readyState === WebSocket.OPEN) {
+        // console.log(data);
+
+        socketCursor.send(JSON.stringify(data));
         lastSent = now;
       }
     };
@@ -146,21 +142,90 @@ function PlayArea() {
     window.addEventListener("mousemove", handleMouseMove);
 
     return () => {
-      connectSocket.close();
-      messageSocket.close();
-      cursorSocket.close();
       window.removeEventListener("mousemove", handleMouseMove);
+      socketCursor?.close();
+      socket?.close();
+
+      divRefs.current.forEach((div) => {
+        if (document.body.contains(div)) {
+          document.body.removeChild(div);
+        }
+      });
+      divRefs.current = [];
     };
-  }, [roomId, name]);
+  }, []);
+
+  useEffect(() => {
+    const removePlayerSocket = new WebSocket(
+      `ws://localhost:8000/ws/remove/${roomId}?name=${name}`
+    );
+
+    socketProvider.set("remove", removePlayerSocket);
+
+    removePlayerSocket.onopen = () => {
+      console.log("Remove socket connection established");
+    };
+
+    removePlayerSocket.onclose = () => {
+      console.log("Remove Move Socket connection closed");
+    };
+
+    removePlayerSocket.onerror = (err) => {
+      console.error("Remove Socket error:", err);
+    };
+
+    removePlayerSocket.onmessage = (event: MessageEvent) => {
+      const parsed = JSON.parse(event.data);
+
+      setStickerMovement((prev) =>
+        prev.filter((user) => user.name !== parsed.name)
+      );
+      setUserData((prev) => prev.filter((user) => user.name !== parsed.name));
+    };
+
+    function handleRemoveSocket(e: BeforeUnloadEvent) {
+      e.preventDefault();
+      // e.returnValue;
+      if (removePlayerSocket.readyState === WebSocket.OPEN) {
+        removePlayerSocket.send(
+          JSON.stringify({ type: "LEAVE", name: "Aryan" })
+        );
+        removePlayerSocket.close();
+      }
+    }
+
+    window.addEventListener("beforeunload", handleRemoveSocket);
+    return () => {
+      window.removeEventListener("beforeunload", handleRemoveSocket);
+
+      if (
+        removePlayerSocket &&
+        removePlayerSocket.readyState === WebSocket.OPEN
+      ) {
+        removePlayerSocket.send(
+          JSON.stringify({ type: "LEAVE", name: "Aryan" })
+        );
+
+        removePlayerSocket.close();
+      }
+    };
+  }, []);
 
   // let date = new Date().getMilliseconds();
+
   return (
     <div className="p-2 flex flex-col ">
       {userData.length > 0 &&
         userData.map((data: UserDetailsProps, index) => (
           <CursorMovement position={{ ...data }} key={index} />
         ))}
-      {show && <UserCursorMovement name={name ?? ""} />}
+      {stickerMovement.length > 0 &&
+        stickerMovement.map((data: StickerDetailProps, index) => (
+          <StickerMovement position={{ ...data }} key={index} />
+        ))}
+      {show && (
+        <UserCursorMovement divRefs={divRefs.current ?? []} name={name ?? ""} />
+      )}
       <h1 className="text-2xl">Fast Api Websocket Chats</h1>
       <div className="flex flex-col gap-y-2">
         <button

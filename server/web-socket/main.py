@@ -1,6 +1,6 @@
 import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from .schemas import user
+from .schemas import user, cursorMovement, stickerMovement
 from typing import Dict, List
 
 # from fastapi.responses import HTMLResponse
@@ -34,48 +34,65 @@ async def handle_data(websocket: WebSocket, room: int, socketType: str):
 
     except Exception as error:
         print(f"\nSomething went wrong {websocket} \n", error)
-        user.disconnect(websocket, room, name, socketType)
-        await user.broadcast(
-            f"Client Id {name} left the chat.", room, websocket, name, socketType
+        user.disconnect(websocket, room, name)
+        cursorMovement.disconnect(websocket, room, name)
+        await stickerMovement.broadcast(
+            {"message": f"Client Id {name} left the chat.", "name": name},
+            room,
+            websocket,
+            name,
         )
 
 
-@app.websocket("/ws/{room}")
-async def websocket_endpoint(websocket: WebSocket, room: int):
+@app.websocket("/ws/cursor/{room}")
+async def track_cursor(websocket: WebSocket, room: int):
+    # await websocket.accept()
 
     name = websocket.query_params.get("name")
-    await user.connect(websocket, room, name, "connection")
-
+    await cursorMovement.connect(websocket, room, name)
     try:
         while True:
             data = await websocket.receive_text()
 
-            if room in user.active_connections:
-
-                for conn in user.active_connections[room]:
-                    if (
-                        conn["name"] != name
-                        and conn["socket"]["connection"] != websocket
-                    ):
-                        await conn["socket"]["connection"].send_text(data)
+            await cursorMovement.broadcast(data, room, name, websocket)
 
     except Exception as error:
         print(f"\nSomething went wrong {websocket} \n", error)
-        user.disconnect(websocket, room, name, "connection")
-
-        await user.broadcast(
-            f"Client Id {name} left the chat.", room, name, websocket, "connection"
+        user.disconnect(websocket, room, name)
+        cursorMovement.disconnect(websocket, room, name)
+        await stickerMovement.broadcast(
+            {"message": f"Client Id {name} left the chat.", "name": name},
+            room,
+            websocket,
+            name,
         )
 
 
-@app.websocket("/ws/message/{room}/{socketType}")
-async def track_message(websocket: WebSocket, room: int, socketType: str):
-    await handle_data(websocket, room, socketType)
+@app.websocket("/ws/remove/{room}")
+async def track_cursor(websocket: WebSocket, room: int):
+    # await websocket.accept()
 
+    name = websocket.query_params.get("name")
+    await stickerMovement.connect(websocket, room, name)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            print("Remove Socket\n ", data)
 
-@app.websocket("/ws/cursor/{room}/{socketType}")
-async def track_cursor(websocket: WebSocket, room: int, socketType: str):
-    await handle_data(websocket, room, socketType)
+            await stickerMovement.broadcast(data, room, name, websocket)
+
+    except Exception as error:
+        print(f"\nSomething went wrong {websocket} \n", error)
+        print("Remove Socket Error\n ", error)
+
+        user.disconnect(websocket, room, name)
+        stickerMovement.disconnect(websocket, room, name)
+        await stickerMovement.broadcast(
+            {"message": f"Client Id {name} left the chat.", "name": name},
+            room,
+            websocket,
+            name,
+        )
 
 
 if __name__ == "__main__":
