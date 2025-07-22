@@ -50,74 +50,72 @@ function PlayArea() {
     // const ws1 = new WebSocket(
     //   `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/cursor/${roomId}?name=${name}`
     // );
-    const ws1 = new WebSocket(
+    const socketCursor = new WebSocket(
       `ws://localhost:8000/ws/cursor/${roomId}?name=${name}`
     );
 
-    socketProvider.set("cursor", ws1);
-    const socketCursor = socketProvider.get("cursor");
+    socketProvider.set("cursor", socketCursor);
+    // socketProvider.get("cursor");
 
-    if (socketCursor) {
-      socketCursor.onclose = () => {
-        console.log("SocketRef.current closed.");
-        // Optionally: attempt reconnect
-      };
+    socketCursor.onclose = () => {
+      console.log("SocketRef.current closed.");
+      // Optionally: attempt reconnect
+    };
 
-      socketCursor.onerror = (err) => {
-        console.error("SocketRef.current error:", err);
-      };
+    socketCursor.onerror = (err) => {
+      console.error("SocketRef.current error:", err);
+    };
 
-      socketCursor.onopen = () => {
-        console.log("Socket opened.");
-      };
+    socketCursor.onopen = () => {
+      console.log("Socket opened.");
+    };
 
-      socketCursor.onmessage = (event: MessageEvent) => {
-        const incomming = JSON.parse(event.data);
+    socketCursor.onmessage = (event: MessageEvent) => {
+      const incomming = JSON.parse(event.data);
 
-        if (incomming.name === name) {
-          return;
-        }
-        if (incomming.type === "delete") {
-          setStickerMovement((prev) =>
-            prev.filter((user) => user.stickerNo !== incomming.stickerNo)
+      if (incomming.name === name) {
+        return;
+      }
+      if (incomming.type === "delete") {
+        setStickerMovement((prev) =>
+          prev.filter((user) => user.stickerNo !== incomming.stickerNo)
+        );
+
+        return;
+      }
+
+      if (incomming.type === "sticker") {
+        setStickerMovement((prev: StickerDetailProps[]) => {
+          const existingIndex = prev.findIndex(
+            (user) =>
+              user.name === incomming.name &&
+              user.stickerNo === incomming.stickerNo
           );
 
-          return;
-        }
+          if (existingIndex !== -1) {
+            const updated = [...prev];
+            updated[existingIndex] = incomming;
+            return updated;
+          } else {
+            return [...prev, incomming];
+          }
+        });
+      } else {
+        setUserData((prev: UserDetailsProps[]) => {
+          const existingIndex = prev.findIndex(
+            (user) => user.name == incomming.name
+          );
 
-        if (incomming.type === "sticker") {
-          setStickerMovement((prev: StickerDetailProps[]) => {
-            const existingIndex = prev.findIndex(
-              (user) =>
-                user.name === incomming.name &&
-                user.stickerNo === incomming.stickerNo
-            );
-
-            if (existingIndex !== -1) {
-              const updated = [...prev];
-              updated[existingIndex] = incomming;
-              return updated;
-            } else {
-              return [...prev, incomming];
-            }
-          });
-        } else {
-          setUserData((prev: UserDetailsProps[]) => {
-            const existingIndex = prev.findIndex(
-              (user) => user.name == incomming.name
-            );
-
-            if (existingIndex !== -1) {
-              const updated = [...prev];
-              updated[existingIndex] = incomming;
-              return updated;
-            } else {
-              return [...prev, incomming];
-            }
-          });
-        }
-      };
-    }
+          if (existingIndex !== -1) {
+            const updated = [...prev];
+            updated[existingIndex] = incomming;
+            return updated;
+          } else {
+            return [...prev, incomming];
+          }
+        });
+      }
+    };
 
     const handleMouseMove = (event: MouseEvent) => {
       const now = Date.now();
@@ -150,10 +148,62 @@ function PlayArea() {
     };
   }, []);
 
-  // useEffect(() => {
-  //   const stickerSocket = socketProvider.get("sticker");
-  //   console.log("stickerSocket", stickerSocket);
-  // }, [socketProvider.get("sticker")]);
+  useEffect(() => {
+    const removePlayerSocket = new WebSocket(
+      `ws://localhost:8000/ws/remove/${roomId}?name=${name}`
+    );
+
+    socketProvider.set("remove", removePlayerSocket);
+    console.log(socketProvider.get("remove"));
+
+    removePlayerSocket.onopen = () => {
+      console.log("Remove socket connection established");
+    };
+
+    removePlayerSocket.onclose = () => {
+      console.log("Remove Move Socket connection closed");
+    };
+
+    removePlayerSocket.onerror = (err) => {
+      console.error("Remove Socket error:", err);
+    };
+
+    removePlayerSocket.onmessage = (event: MessageEvent) => {
+      const parsed = JSON.parse(event.data);
+      console.log("Remove Move Data", parsed);
+      setStickerMovement((prev) =>
+        prev.filter((user) => user.name !== parsed.name)
+      );
+      setUserData((prev) => prev.filter((user) => user.name !== parsed.name));
+    };
+
+    function handleRemoveSocket(e: BeforeUnloadEvent) {
+      e.preventDefault();
+      // e.returnValue;
+      if (removePlayerSocket.readyState === WebSocket.OPEN) {
+        removePlayerSocket.send(
+          JSON.stringify({ type: "LEAVE", name: "Aryan" })
+        );
+        removePlayerSocket.close();
+      }
+    }
+
+    window.addEventListener("beforeunload", handleRemoveSocket);
+    return () => {
+      window.removeEventListener("beforeunload", handleRemoveSocket);
+
+      if (
+        removePlayerSocket &&
+        removePlayerSocket.readyState === WebSocket.OPEN
+      ) {
+        removePlayerSocket.send(
+          JSON.stringify({ type: "LEAVE", name: "Aryan" })
+        );
+
+        removePlayerSocket.close();
+      }
+    };
+  }, []);
 
   // let date = new Date().getMilliseconds();
 

@@ -66,7 +66,12 @@ async def track_cursor(websocket: WebSocket, room: int):
         print(f"\nSomething went wrong {websocket} \n", error)
         user.disconnect(websocket, room, name)
         cursorMovement.disconnect(websocket, room, name)
-        await user.broadcast(f"Client Id {name} left the chat.", room, websocket, name)
+        await stickerMovement.broadcast(
+            {"message": f"Client Id {name} left the chat.", "name": name},
+            room,
+            websocket,
+            name,
+        )
 
 
 @app.websocket("/ws/cursor/{room}")
@@ -85,12 +90,15 @@ async def track_cursor(websocket: WebSocket, room: int):
         print(f"\nSomething went wrong {websocket} \n", error)
         user.disconnect(websocket, room, name)
         cursorMovement.disconnect(websocket, room, name)
-        await cursorMovement.broadcast(
-            f"Client Id {name} left the chat.", room, websocket, name
+        await stickerMovement.broadcast(
+            {"message": f"Client Id {name} left the chat.", "name": name},
+            room,
+            websocket,
+            name,
         )
 
 
-@app.websocket("/ws/sticker/{room}")
+@app.websocket("/ws/remove/{room}")
 async def track_cursor(websocket: WebSocket, room: int):
     # await websocket.accept()
 
@@ -99,15 +107,21 @@ async def track_cursor(websocket: WebSocket, room: int):
     try:
         while True:
             data = await websocket.receive_text()
+            print("Remove Socket\n ", data)
 
             await stickerMovement.broadcast(data, room, name, websocket)
 
     except Exception as error:
         print(f"\nSomething went wrong {websocket} \n", error)
+        print("Remove Socket Error\n ", error)
+
         user.disconnect(websocket, room, name)
         stickerMovement.disconnect(websocket, room, name)
         await stickerMovement.broadcast(
-            f"Client Id {name} left the chat.", room, websocket, name
+            {"message": f"Client Id {name} left the chat.", "name": name},
+            room,
+            websocket,
+            name,
         )
 
 

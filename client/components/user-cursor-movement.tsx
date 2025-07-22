@@ -27,21 +27,6 @@ function UserCursorMovement({ name }: { name: string }) {
   useEffect(() => {
     // socket.readyState === WebSocket.OPEN;
 
-    const stickerSocket = new WebSocket(
-      `ws://localhost:8000/ws/sticker/${roomId}?name=${name}`
-    );
-
-    console.log(socketProvider.get("sticker"));
-    stickerSocket.onclose = () => {
-      console.log("Sticker Move Socket connection closed");
-    };
-    stickerSocket.onerror = (err) => {
-      console.error("Sticker Socket error:", err);
-    };
-    stickerSocket.onmessage = (event: MessageEvent) => {
-      const parsed = JSON.parse(event.data);
-      console.log("Sticker Move Data", parsed);
-    };
     const handleMouseDown = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
 
@@ -82,8 +67,6 @@ function UserCursorMovement({ name }: { name: string }) {
     window.addEventListener("mousedown", handleMouseDown);
 
     return () => {
-      stickerSocket.close();
-
       window.removeEventListener("mousedown", handleMouseDown);
     };
   }, [socketProvider]);

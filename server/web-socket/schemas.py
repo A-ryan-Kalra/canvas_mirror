@@ -102,7 +102,7 @@ class StickerMovement:
         if room in self.sticker_session:
             for user in self.sticker_session[room]:
                 if user["name"] != name and user["socket"] != websocket:
-                    await user["socket"].send_text(message)
+                    await user["socket"].send_json(message)
 
         if not self.sticker_session[room]:
             del self.sticker_session[room]
