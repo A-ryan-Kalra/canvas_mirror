@@ -7,6 +7,10 @@ function Canvas() {
   const isDrawing = useRef<boolean>(false);
 
   useEffect(() => {
+    isErasingRef.current = isErasing;
+  }, [isErasing]);
+
+  useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -29,11 +33,51 @@ function Canvas() {
 
       return { offsetX, offsetY };
     };
+
+    const startDrawing = (event: MouseEvent) => {
+      isDrawing.current = true;
+      const { offsetX, offsetY } = getMousePosition(event);
+      ctx.beginPath();
+      ctx.moveTo(offsetX, offsetY);
+    };
+    const stopDrawing = () => {
+      isDrawing.current = false;
+      ctx.beginPath();
+    };
+
+    const draw = (event: MouseEvent) => {
+      if (!isDrawing.current) return;
+
+      const { offsetX, offsetY } = getMousePosition(event);
+
+      if (isErasingRef.current) {
+        ctx.globalCompositeOperation = "destination-out";
+        ctx.arc(offsetX, offsetY, 10, 10, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(offsetX, offsetY);
+      } else {
+        ctx.globalCompositeOperation = "source-over";
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 5;
+        ctx.lineCap = "round";
+        ctx.lineTo(offsetX, offsetY);
+        ctx.stroke();
+      }
+    };
+
+    canvas.addEventListener("mousedown", startDrawing);
+    canvas.addEventListener("mousemove", draw);
+    canvas.addEventListener("mouseup", stopDrawing);
+    canvas.addEventListener("mouseout", stopDrawing);
   }, []);
 
   return (
     <div>
-      <button className="border-[1px] p-1">
+      <button
+        onClick={() => setIsErasing((prev) => !prev)}
+        className="border-[1px] p-1"
+      >
         {isErasing ? "Switch to Draw" : "Switch to Erase"}
       </button>
       <canvas className="border-[1px] bg-white border-black" ref={canvasRef} />
