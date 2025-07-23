@@ -27,14 +27,15 @@ class User:
     async def send_personal_message(self, message: str, websocket: WebSocket):
         await websocket.send_text(message)
 
-    async def broadcast(self, message: str, room: int, name: str, websocket: WebSocket):
+    async def broadcast(self, message: str, room: int, websocket: WebSocket, name: str):
+        # print(message, room)
 
         if room in self.active_connections:
             for user in self.active_connections[room]:
                 if user["name"] != name and user["socket"] != websocket:
                     await user["socket"].send_text(message)
 
-        if not self.active_connections[room]:
+        if room in self.active_connections and not self.active_connections[room]:
             del self.active_connections[room]
             print("No users left")
 
@@ -69,7 +70,7 @@ class CursorMovement:
                 if user["name"] != name and user["socket"] != websocket:
                     await user["socket"].send_text(message)
 
-        if not self.cursor_connections[room]:
+        if room in self.cursor_connections and not self.cursor_connections[room]:
             del self.cursor_connections[room]
             print("No users left")
 
@@ -104,7 +105,7 @@ class StickerMovement:
                 if user["name"] != name and user["socket"] != websocket:
                     await user["socket"].send_json(message)
 
-        if not self.sticker_session[room]:
+        if room in self.sticker_session and not self.sticker_session[room]:
             del self.sticker_session[room]
             print("No users left")
 
