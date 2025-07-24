@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { createElement, useEffect, useRef, useState } from "react";
 import { useSocket } from "../services/use-socket-provider";
 import { useLocation } from "react-router-dom";
-import { Eraser, PawPrint } from "lucide-react";
+import { Eraser, PaletteIcon, PawPrint, PenLine } from "lucide-react";
 import PickColor from "./pick-color";
 
 function Canvas() {
@@ -10,18 +10,27 @@ function Canvas() {
   const name = searchParams.get("name");
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [ctx, setCtx] = useState<CanvasRenderingContext2D>();
-  const [isErasing, setIsErasing] = useState<boolean>(false);
-  // const []
-  const isErasingRef = useRef<boolean>(false);
+  const [eraserPosition, setEraserPosition] = useState({ x: 0, y: 0 });
+
   const isDrawing = useRef<boolean>(false);
   const { socketProvider } = useSocket();
-  const toolTip = useRef<{ eraser: boolean; pickColor: boolean }>({
+  const toolTip = useRef<{
+    eraser: boolean;
+    pickColor: boolean;
+    showText: boolean;
+  }>({
     eraser: false,
     pickColor: false,
+    showText: false,
   });
-  const [tools, setTools] = useState<{ eraser: boolean; pickColor: boolean }>({
+  const [tools, setTools] = useState<{
+    eraser: boolean;
+    pickColor: boolean;
+    penSize: boolean;
+  }>({
     eraser: false,
     pickColor: false,
+    penSize: false,
   });
 
   useEffect(() => {
@@ -48,6 +57,7 @@ function Canvas() {
     canvas.style.width = `${window.innerWidth}px`;
     canvas.style.height = `${window.innerHeight}px`;
     ctx.scale(dpr, dpr);
+    ctx.lineWidth = 5;
     ctx.fill();
 
     const getMousePosition = (event: MouseEvent) => {
@@ -99,21 +109,40 @@ function Canvas() {
       const { offsetX, offsetY } = getMousePosition(event);
 
       if (toolTip.current.eraser) {
-        ctx.save();
-
         ctx.globalCompositeOperation = "destination-out";
-        ctx.rect(offsetX, offsetY, 100, 100);
+        const size = 100;
+        ctx.rect(offsetX - size / 2, offsetY - size / 2, size, size);
         ctx.fill();
         ctx.beginPath();
         ctx.moveTo(offsetX, offsetY);
-        ctx.restore();
+
         sendDataToUser(name as string, "canvas", "erase", { offsetX, offsetY });
+      } else if (toolTip.current.showText) {
+        // ctx.strokeStyle = "red";
+        // ctx.lineWidth = 1;
+        // ctx.strokeText("Hello, Canvas!", offsetX, offsetY);
+        ctx.font = "20px Arial";
+        ctx.fillStyle = "#000"; // text color
+        ctx.fillText("Hello, Canvas!", offsetX, offsetY);
       } else {
-        ctx.save();
         ctx.globalCompositeOperation = "source-over";
-        ctx.lineWidth = 5;
+        // ctx.lineWidth = 1;
+
         ctx.lineCap = "round";
         ctx.lineTo(offsetX, offsetY);
+        // ctx.translate(offsetX, offsetY);
+        ctx.font = "20px Arial";
+        // console.log(ctx.lineWidth);
+        //Draw Reactangle
+        // ctx.stroke();
+        // ctx!.fillStyle = "blue"; // fill color
+        // ctx!.strokeRect(offsetX, offsetY, 200, 150);
+
+        //Draw Circle
+        // ctx.beginPath();
+        // ctx.arc(offsetX, offsetY, Math.PI, 0, Math.PI * 2); // full circle
+        // ctx.fill(); // for filled
+        // or
         ctx.stroke();
         sendDataToUser(name as string, "canvas", "draw", { offsetX, offsetY });
       }
@@ -149,6 +178,12 @@ function Canvas() {
       // ctx?.lineTo(parsed.position?.offsetX, parsed?.position?.offsetY);
     }
 
+    function handleEraser(event: MouseEvent) {
+      if (toolTip.current.eraser) {
+        setEraserPosition({ x: event.clientX, y: event.clientY });
+      }
+    }
+
     socketProvider
       .get("message")
       ?.addEventListener("message", handleCanvasPosition);
@@ -156,23 +191,45 @@ function Canvas() {
     canvas.addEventListener("mousemove", draw);
     canvas.addEventListener("mouseup", stopDrawing);
     canvas.addEventListener("mouseout", stopDrawing);
+    window.addEventListener("mousemove", handleEraser);
 
     return () => {
-      socketProvider
-        .get("message")
-        ?.addEventListener("message", handleCanvasPosition);
+      window.removeEventListener("mousemove", handleEraser);
     };
   }, [socketProvider.get("message")]);
-
   return (
     <div className=" w-full h-dvh relative">
-      <div className="absolute w-[50px] right-4  top-3 h-[300px] border-[1px] border-slate-400 rounded-md shadow-amber-300">
-        <ul className="flex flex-col items-center gap-y-2 p-1 w-full h-full">
+      {tools.eraser && (
+        <div
+          style={{
+            position: "fixed",
+            border: "1px solid black",
+            cursor: "grab",
+            borderRadius: "10px",
+            boxShadow: "0px 0px 10px rgba(0,0,0,0.2)",
+            transform: `translate(${eraserPosition.x - 100 / 2}px, ${
+              eraserPosition.y - 100 / 2
+            }px)`,
+            width: "100px",
+            height: "100px",
+            pointerEvents: "none",
+          }}
+        />
+      )}
+      <div
+        style={{ zIndex: 999999 }}
+        className="absolute  w-[50px] right-4  top-3 h-[300px] border-[1px] border-slate-400 rounded-md shadow-amber-300"
+      >
+        <ul className="flex flex-col items-center gap-y-4 p-1 w-full h-full">
           <li
             className="cursor-pointer"
             onClick={() => {
               toolTip.current.eraser = !toolTip.current.eraser;
-              setTools((prev) => ({ ...prev, eraser: !prev.eraser }));
+              setTools((prev) => ({
+                penSize: false,
+                pickColor: false,
+                eraser: !prev.eraser,
+              }));
             }}
           >
             <Eraser className={`${tools.eraser ? "fill-slate-300" : ""}`} />
@@ -180,26 +237,62 @@ function Canvas() {
           <li
             className="relative cursor-pointer"
             onClick={() => {
-              toolTip.current.pickColor = !toolTip.current.pickColor;
-              setTools((prev) => ({ ...prev, pickColor: !prev.pickColor }));
+              // toolTip.current.pickColor = !toolTip.current.pickColor;
+              toolTip.current.eraser = false;
+
+              setTools((prev) => ({
+                eraser: false,
+                penSize: false,
+                pickColor: !prev.pickColor,
+              }));
             }}
           >
-            <PawPrint
+            <PaletteIcon
               className={`${tools.pickColor ? "fill-purple-300" : ""}`}
             />
             <div onClick={(e) => e.stopPropagation()}>
               {tools.pickColor && (
                 <PickColor
-                  pick={(color: string) => {
-                    // console.log(ctx!.strokeStyle);
-                    ctx!.strokeStyle = color;
+                  pick={(rgba: {
+                    r: number;
+                    g: number;
+                    b: number;
+                    a: number;
+                  }) => {
+                    ctx!.strokeStyle = `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${rgba.a})`;
                   }}
                 />
               )}
             </div>
           </li>
-          <li>
-            <Eraser />
+          <li
+            onClick={() => {
+              toolTip.current.eraser = false;
+
+              setTools((prev) => ({
+                penSize: !prev.penSize,
+                eraser: false,
+                pickColor: false,
+              }));
+            }}
+            className="relative cursor-pointer"
+          >
+            <PenLine className={`${tools.penSize ? "fill-purple-300" : ""}`} />
+            {/* {tools.penSize && ( */}
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className={`absolute right-10 top-0 ${
+                tools.penSize ? "visible" : "invisible"
+              }`}
+            >
+              <input
+                type="range"
+                max={40}
+                defaultValue={5}
+                onChange={(e) => (ctx!.lineWidth = Number(e.target.value))}
+              />
+            </div>
+            {/* )} */}
           </li>
         </ul>
       </div>
