@@ -1,9 +1,24 @@
-import { createElement, useEffect, useRef, useState } from "react";
+import { createElement, FormEvent, useEffect, useRef, useState } from "react";
 import { useSocket } from "../services/use-socket-provider";
 import { useLocation } from "react-router-dom";
-import { Eraser, PaletteIcon, PawPrint, PenLine } from "lucide-react";
+import {
+  ALargeSmallIcon,
+  Eraser,
+  PaletteIcon,
+  PawPrint,
+  PenLine,
+  StickerIcon,
+} from "lucide-react";
 import PickColor from "./pick-color";
+import { atom, useAtom } from "jotai";
 
+export const stickerDetails = atom<{
+  sticketTextAtom: boolean;
+  bgColor: string;
+}>({
+  sticketTextAtom: false,
+  bgColor: "",
+});
 function Canvas() {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -11,6 +26,9 @@ function Canvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [ctx, setCtx] = useState<CanvasRenderingContext2D>();
   const [eraserPosition, setEraserPosition] = useState({ x: 0, y: 0 });
+  const [showCanvasText, setShowCanvasText] = useState({ x: -100, y: -100 });
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [showStickerDetails, setShowStickerDetails] = useAtom(stickerDetails);
 
   const isDrawing = useRef<boolean>(false);
   const { socketProvider } = useSocket();
@@ -18,19 +36,23 @@ function Canvas() {
     eraser: boolean;
     pickColor: boolean;
     showText: boolean;
+    canvasText: boolean;
   }>({
     eraser: false,
     pickColor: false,
     showText: false,
+    canvasText: false,
   });
   const [tools, setTools] = useState<{
     eraser: boolean;
     pickColor: boolean;
     penSize: boolean;
+    canvasText: boolean;
   }>({
     eraser: false,
     pickColor: false,
     penSize: false,
+    canvasText: false,
   });
 
   useEffect(() => {
@@ -183,6 +205,16 @@ function Canvas() {
         setEraserPosition({ x: event.clientX, y: event.clientY });
       }
     }
+    function showCanvasTextPosition(event: MouseEvent) {
+      if (toolTip.current.canvasText) {
+        if (!inputRef.current?.contains(event.target as Node)) {
+          setShowCanvasText({ x: event.clientX, y: event.clientY });
+        }
+        setTimeout(() => {
+          inputRef.current?.focus();
+        }, 0);
+      }
+    }
 
     socketProvider
       .get("message")
@@ -192,13 +224,37 @@ function Canvas() {
     canvas.addEventListener("mouseup", stopDrawing);
     canvas.addEventListener("mouseout", stopDrawing);
     window.addEventListener("mousemove", handleEraser);
+    window.addEventListener("mousedown", showCanvasTextPosition);
 
     return () => {
       window.removeEventListener("mousemove", handleEraser);
+      canvas.removeEventListener("mousedown", startDrawing);
+      canvas.removeEventListener("mousemove", draw);
+      canvas.removeEventListener("mouseup", stopDrawing);
+      canvas.removeEventListener("mouseout", stopDrawing);
+      window.removeEventListener("mousemove", handleEraser);
+      window.removeEventListener("mousedown", showCanvasTextPosition);
     };
   }, [socketProvider.get("message")]);
+
+  function handleInput(e: FormEvent) {
+    e.preventDefault();
+    toolTip.current.canvasText = !toolTip.current.canvasText;
+
+    setTools(() => ({
+      penSize: false,
+      eraser: false,
+      pickColor: false,
+      canvasText: false,
+    }));
+  }
+
   return (
-    <div className=" w-full h-dvh relative">
+    <div
+      className={` w-full h-dvh relative ${
+        tools.canvasText ? "cursor-text" : ""
+      }`}
+    >
       {tools.eraser && (
         <div
           style={{
@@ -216,6 +272,7 @@ function Canvas() {
           }}
         />
       )}
+
       <div
         style={{ zIndex: 999999 }}
         className="absolute  w-[50px] right-4  top-3 h-[300px] border-[1px] border-slate-400 rounded-md shadow-amber-300"
@@ -224,11 +281,19 @@ function Canvas() {
           <li
             className="cursor-pointer"
             onClick={() => {
+              setShowStickerDetails((prev) => ({
+                bgColor: (ctx?.strokeStyle as unknown as string) ?? "",
+                sticketTextAtom: false,
+              }));
               toolTip.current.eraser = !toolTip.current.eraser;
+              toolTip.current.canvasText = false;
+              toolTip.current.pickColor = false;
+              toolTip.current.showText = false;
               setTools((prev) => ({
                 penSize: false,
                 pickColor: false,
                 eraser: !prev.eraser,
+                canvasText: false,
               }));
             }}
           >
@@ -238,12 +303,16 @@ function Canvas() {
             className="relative cursor-pointer"
             onClick={() => {
               // toolTip.current.pickColor = !toolTip.current.pickColor;
-              toolTip.current.eraser = false;
 
+              toolTip.current.canvasText = false;
+              toolTip.current.eraser = false;
+              toolTip.current.pickColor = false;
+              toolTip.current.showText = false;
               setTools((prev) => ({
                 eraser: false,
                 penSize: false,
                 pickColor: !prev.pickColor,
+                canvasText: false,
               }));
             }}
           >
@@ -267,18 +336,20 @@ function Canvas() {
           </li>
           <li
             onClick={() => {
+              toolTip.current.canvasText = false;
               toolTip.current.eraser = false;
-
+              toolTip.current.pickColor = false;
+              toolTip.current.showText = false;
               setTools((prev) => ({
                 penSize: !prev.penSize,
                 eraser: false,
                 pickColor: false,
+                canvasText: false,
               }));
             }}
             className="relative cursor-pointer"
           >
             <PenLine className={`${tools.penSize ? "fill-purple-300" : ""}`} />
-            {/* {tools.penSize && ( */}
             <div
               onClick={(e) => e.stopPropagation()}
               className={`absolute right-10 top-0 ${
@@ -292,7 +363,96 @@ function Canvas() {
                 onChange={(e) => (ctx!.lineWidth = Number(e.target.value))}
               />
             </div>
-            {/* )} */}
+          </li>
+          <li
+            onClick={() => {
+              toolTip.current.canvasText = !toolTip.current.canvasText;
+              toolTip.current.eraser = false;
+              toolTip.current.pickColor = false;
+              toolTip.current.showText = false;
+              setTools((prev) => ({
+                penSize: false,
+                eraser: false,
+                pickColor: false,
+                canvasText: !prev.canvasText,
+              }));
+            }}
+            className="relative cursor-pointer"
+          >
+            <ALargeSmallIcon />
+            {tools.canvasText && (
+              <form
+                onClick={(e) => e.stopPropagation()}
+                onSubmit={handleInput}
+                className=""
+              >
+                <input
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") {
+                      toolTip.current.canvasText = !toolTip.current.canvasText;
+                      toolTip.current.eraser = false;
+                      toolTip.current.pickColor = false;
+                      toolTip.current.showText = false;
+
+                      setTools(() => ({
+                        penSize: false,
+                        eraser: false,
+                        pickColor: false,
+                        canvasText: false,
+                      }));
+                    }
+                  }}
+                  ref={inputRef}
+                  maxLength={30}
+                  placeholder="Max 30 words"
+                  style={{
+                    width: "150px",
+                    height: "30px",
+                    position: "fixed",
+                    borderRadius: "3px",
+                    // pointerEvents: "none",
+                    zIndex: 99999,
+
+                    left: `${showCanvasText.x}px`,
+                    top: `${showCanvasText.y}px`,
+                  }}
+                  onChange={(e) => {
+                    if (ctx) {
+                      ctx.font = "20px Arial";
+                      ctx.fillStyle = ctx.strokeStyle; // text color
+                      ctx.fillText(
+                        e.target.value,
+                        showCanvasText.x,
+                        showCanvasText.y
+                      );
+                    }
+                  }}
+                  type="text"
+                  className="  border-none outline-none text-sm p-1 left-12 bg-black/10"
+                />
+              </form>
+            )}
+          </li>
+          <li
+            onClick={() => {
+              toolTip.current.canvasText = false;
+              toolTip.current.eraser = false;
+              toolTip.current.pickColor = false;
+              toolTip.current.showText = false;
+              setShowStickerDetails((prev) => ({
+                bgColor: (ctx?.strokeStyle as unknown as string) ?? "",
+                sticketTextAtom: !prev.sticketTextAtom,
+              }));
+              setTools((prev) => ({
+                penSize: false,
+                eraser: false,
+                pickColor: false,
+                canvasText: false,
+              }));
+            }}
+            className="relative cursor-pointer"
+          >
+            <StickerIcon />
           </li>
         </ul>
       </div>
