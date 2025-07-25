@@ -101,9 +101,13 @@ function Canvas() {
 
     setCtx(context);
     if (!ctx) return;
-
+    let dpr;
     // const dpr = window.devicePixelRatio || 1;
-    const dpr = 1;
+    if (window.innerWidth < 1200) {
+      dpr = 1;
+    } else {
+      dpr = window.devicePixelRatio || 1;
+    }
 
     canvas.width = window.innerWidth * dpr;
     canvas.height = window.innerHeight * dpr;
@@ -120,6 +124,45 @@ function Canvas() {
 
       return { offsetX, offsetY };
     };
+
+    function touchStart(event: TouchEvent) {
+      let offSetX = 0;
+      let offSetY = 0;
+      isDrawing.current = true;
+
+      if (event?.touches?.length > 0) {
+        let touch = event?.touches[0];
+        (offSetX = touch.clientX), (offSetY = touch.clientY);
+        ctx?.beginPath();
+        ctx?.moveTo(offSetX, offSetY);
+      }
+      const data = {
+        name,
+        steps: "start",
+        position: { offSetX, offSetY },
+        type: "canvas",
+        innerWidth: window.innerWidth,
+        innerHeight: window.innerHeight,
+      };
+      socketProvider.get("message")?.send(JSON.stringify(data));
+      return { offSetX, offSetY };
+    }
+
+    function touchMove(event: TouchEvent) {
+      const now = Date.now();
+      if (now - lastSent < 20) return;
+      if (toolsRef.current.eraser) {
+        const touch = event.touches[0];
+        console.log({ x: touch.clientX, y: touch.clientY });
+        setEraserPosition({ x: touch.clientX, y: touch.clientY });
+        drawCanvas(touch.clientX, touch.clientY);
+      } else {
+        const { offSetX, offSetY } = touchStart(event);
+        console.log({ offSetX, offSetY });
+        drawCanvas(offSetX, offSetY);
+      }
+      lastSent = now;
+    }
 
     const startDrawing = (event: MouseEvent) => {
       isDrawing.current = true;
@@ -140,14 +183,7 @@ function Canvas() {
       ctx.beginPath();
       sendDataToUser(name as string, "canvas", "stop");
     };
-
-    const draw = (event: MouseEvent) => {
-      const now = Date.now();
-      if (now - lastSent < 20) return;
-      if (!isDrawing.current) return;
-
-      const { offsetX, offsetY } = getMousePosition(event);
-
+    const drawCanvas = (offsetX: number, offsetY: number) => {
       if (toolsRef.current.eraser) {
         ctx.globalCompositeOperation = "destination-out";
         const size = 100;
@@ -171,7 +207,7 @@ function Canvas() {
         ctx.lineCap = "round";
         ctx.lineTo(offsetX, offsetY);
         // ctx.translate(offsetX, offsetY);
-        ctx.font = "20px Arial";
+        // ctx.font = "20px Arial";
         // console.log(ctx.lineWidth);
         //Draw Reactangle
         // ctx.stroke();
@@ -194,6 +230,15 @@ function Canvas() {
           ctx?.fillStyle as unknown as string
         );
       }
+    };
+    const draw = (event: MouseEvent) => {
+      const now = Date.now();
+      if (now - lastSent < 20) return;
+      if (!isDrawing.current) return;
+
+      const { offsetX, offsetY } = getMousePosition(event);
+      drawCanvas(offsetX, offsetY);
+
       lastSent = now;
     };
 
@@ -204,16 +249,24 @@ function Canvas() {
       if (ctx) {
         ctx.strokeStyle = parsed?.strokeStyle;
         ctx.lineWidth = parsed?.lineWidth;
+        console.log(ctx);
         ctx.fillStyle = parsed?.strokeStyle;
       }
       if (parsed.status === "erase") {
         ctx!.globalCompositeOperation = "destination-out";
         const size = 100;
+
         ctx!.rect(
-          (parsed.position?.offsetX / parsed.innerWidth - size / 2) *
+          ((parsed.position?.offsetX - size / 2) / parsed.innerWidth) *
             window.innerWidth,
-          (parsed.position?.offsetY / parsed.innterHeight - size / 2) *
+          ((parsed.position?.offsetY - size / 2) / parsed.innerHeight) *
             window.innerHeight,
+          size,
+          size
+        );
+        ctx!.rect(
+          parsed.position?.offsetX - size / 2,
+          parsed.position?.offsetX - size / 2,
           size,
           size
         );
@@ -285,6 +338,35 @@ function Canvas() {
         });
       }
     }
+    const resizeCanvas = () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      //  Save the current drawing as an image
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+      // const dpr = window.devicePixelRatio || 1;
+      let dpr;
+      if (window.innerWidth < 1200) {
+        dpr = 1;
+      } else {
+        dpr = window.devicePixelRatio || 1;
+      }
+      // dpr = window.devicePixelRatio || 1;
+
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      canvas.style.width = `${window.innerWidth}px`;
+      canvas.style.height = `${window.innerHeight}px`;
+      ctx.lineWidth = 5;
+
+      ctx.scale(dpr, dpr);
+
+      //  Restore the saved image
+      ctx.putImageData(imageData, 0, 0);
+    };
 
     socketProvider
       .get("message")
@@ -296,6 +378,10 @@ function Canvas() {
     window.addEventListener("mousemove", handleEraser);
     window.addEventListener("mousedown", showCanvasTextPosition);
     window.addEventListener("keydown", closeAllTools);
+    window.addEventListener("resize", resizeCanvas);
+    window.addEventListener("touchstart", touchStart);
+    window.addEventListener("touchmove", touchMove);
+    window.addEventListener("touchend", stopDrawing);
 
     return () => {
       window.removeEventListener("mousemove", handleEraser);
@@ -306,6 +392,10 @@ function Canvas() {
       window.removeEventListener("mousemove", handleEraser);
       window.removeEventListener("mousedown", showCanvasTextPosition);
       window.removeEventListener("keydown", closeAllTools);
+      window.removeEventListener("resize", resizeCanvas);
+      window.removeEventListener("touchstart", touchStart);
+      window.removeEventListener("touchmove", touchMove);
+      window.removeEventListener("touchend", stopDrawing);
     };
   }, [socketProvider.get("message")]);
 
@@ -323,7 +413,7 @@ function Canvas() {
 
   return (
     <div
-      className={` w-full h-dvh relative ${
+      className={` w-full h-full relative ${
         tools.canvasText ? "cursor-text" : ""
       }`}
     >
@@ -348,7 +438,7 @@ function Canvas() {
       <div
         ref={palleteRef}
         style={{ zIndex: 999999 }}
-        className="absolute  w-[50px] right-4  top-3 h-[250px] border-[1px] border-slate-400 rounded-md shadow-amber-300"
+        className="absolute  w-[50px] left-1  top-3 h-[250px] border-[1px] border-slate-400 rounded-md shadow-amber-300"
       >
         <ul className="flex flex-col items-center gap-y-4 p-1 w-full h-full">
           <li
@@ -362,18 +452,14 @@ function Canvas() {
                 bgColor: (ctx?.strokeStyle as unknown as string) ?? "",
                 sticketTextAtom: false,
               }));
-              setShowStickerDetails(() => ({
-                bgColor: (ctx?.strokeStyle as unknown as string) ?? "",
-                sticketTextAtom: false,
-              }));
-              toolsRef.current.eraser = !toolsRef.current.eraser;
+              toolsRef.current.eraser = true;
               toolsRef.current.canvasText = false;
               toolsRef.current.pickColor = false;
               toolsRef.current.showText = false;
               setTools((prev) => ({
                 penSize: false,
                 pickColor: false,
-                eraser: !prev.eraser,
+                eraser: true,
                 canvasText: false,
               }));
             }}
@@ -387,7 +473,7 @@ function Canvas() {
                 : " border-transparent"
             } border-[1px] p-1`}
             onClick={() => {
-              // toolsRef.current.pickColor = !toolsRef.current.pickColor;
+              // toolsRef.current.pickColor = true;
               setShowStickerDetails(() => ({
                 bgColor: (ctx?.strokeStyle as unknown as string) ?? "",
                 sticketTextAtom: false,
@@ -448,7 +534,7 @@ function Canvas() {
             <PenLine className={`${tools.penSize ? "fill-purple-300" : ""}`} />
             <div
               onClick={(e) => e.stopPropagation()}
-              className={`absolute right-10 top-0 ${
+              className={`absolute left-10 top-0 ${
                 tools.penSize ? "visible" : "invisible"
               }`}
             >
@@ -462,15 +548,17 @@ function Canvas() {
           </li>
           <li
             onClick={() => {
-              toolsRef.current.canvasText = !toolsRef.current.canvasText;
+              toolsRef.current.canvasText = true;
               toolsRef.current.eraser = false;
               toolsRef.current.pickColor = false;
               toolsRef.current.showText = false;
+              console.log(ctx!.strokeStyle);
+              ctx!.fillStyle = ctx!.strokeStyle;
               setTools((prev) => ({
                 penSize: false,
                 eraser: false,
                 pickColor: false,
-                canvasText: !prev.canvasText,
+                canvasText: true,
               }));
               setShowStickerDetails(() => ({
                 bgColor: (ctx?.strokeStyle as unknown as string) ?? "",
@@ -492,7 +580,7 @@ function Canvas() {
               >
                 <input
                   ref={inputRef}
-                  maxLength={30}
+                  // maxLength={30}
                   placeholder="Max 30 words"
                   style={{
                     width: "150px",
@@ -543,7 +631,7 @@ function Canvas() {
               toolsRef.current.showText = false;
               setShowStickerDetails((prev) => ({
                 bgColor: (ctx?.strokeStyle as unknown as string) ?? "",
-                sticketTextAtom: !prev.sticketTextAtom,
+                sticketTextAtom: true,
               }));
               setTools(() => ({
                 penSize: false,
@@ -565,7 +653,7 @@ function Canvas() {
 
       <canvas
         // style={{ margin: 0, padding: 0 }}
-        className="border-[1px] bg-white border-black"
+        className=" bg-white "
         ref={canvasRef}
       />
     </div>
