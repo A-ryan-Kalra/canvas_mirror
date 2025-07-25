@@ -1,7 +1,7 @@
 import { Sketch } from "@uiw/react-color";
 
 interface PickColorProps {
-  pick: (color: string) => void;
+  pick: (rgba: { r: number; g: number; b: number; a: number }) => void;
 }
 export default function PickColor({ pick }: PickColorProps) {
   return (
@@ -9,7 +9,7 @@ export default function PickColor({ pick }: PickColorProps) {
       className="absolute top-0 right-10"
       style={{ marginLeft: 20 }}
       onChange={(color) => {
-        pick(color.hex);
+        pick({ ...color.rgba });
       }}
     />
   );

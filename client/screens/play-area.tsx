@@ -4,6 +4,8 @@ import UserCursorMovement from "../components/user-cursor-movement";
 import { useSocket } from "../services/use-socket-provider";
 import { useLocation, useParams } from "react-router-dom";
 import StickerMovement from "../components/sticker-movement";
+import Canvas from "../components/canvas";
+
 import type {
   StickerDetailProps,
   StickerMovementProps,
@@ -25,24 +27,34 @@ function PlayArea() {
   );
 
   useEffect(() => {
-    const ws = new WebSocket(
+    const socket = new WebSocket(
       `ws://localhost:8000/ws/message/${roomId}?name=${name}`
+      // `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/message/${roomId}?name=${name}`
     );
     // const ws = new WebSocket(
     //   `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/message/${roomId}?name=${name}`
     // );
-    socketProvider.set("message", ws);
-    const socket = socketProvider.get("message");
+    socketProvider.set("message", socket);
+    // const socket = socketProvider.get("message");
 
-    if (socket) {
-      socket!.onopen = () => {
-        setShowInput(true);
-        console.log(`Successfully established the connection.`);
-        const data = { name, message: `${name} entered the room.` };
-        socket?.send(JSON.stringify(data));
+    socket.onopen = () => {
+      setShowInput(true);
+      console.log(`Successfully established the connection.`);
+
+      const data = {
+        type: "message",
+        name,
+        message: `${name} entered the room.`,
       };
+      socket?.send(JSON.stringify(data));
+    };
+    if (socket) {
       socket!.onclose = () => {
         console.log(`${name} left the chat room.`);
+      };
+      socket!.onmessage = (event: MessageEvent) => {
+        const parsed = JSON.parse(event.data);
+        console.log(`${parsed.name} entered the chat room`);
       };
     }
 
@@ -52,6 +64,7 @@ function PlayArea() {
     // );
     const socketCursor = new WebSocket(
       `ws://localhost:8000/ws/cursor/${roomId}?name=${name}`
+      // `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/cursor/${roomId}?name=${name}`
     );
 
     socketProvider.set("cursor", socketCursor);
@@ -158,6 +171,7 @@ function PlayArea() {
   useEffect(() => {
     const removePlayerSocket = new WebSocket(
       `ws://localhost:8000/ws/remove/${roomId}?name=${name}`
+      // `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/remove/${roomId}?name=${name}`
     );
 
     socketProvider.set("remove", removePlayerSocket);
@@ -214,7 +228,7 @@ function PlayArea() {
   // let date = new Date().getMilliseconds();
 
   return (
-    <div className="p-2 flex flex-col ">
+    <div className="h-full w-full">
       {userData.length > 0 &&
         userData.map((data: UserDetailsProps, index) => (
           <CursorMovement position={{ ...data }} key={index} />
@@ -226,7 +240,7 @@ function PlayArea() {
       {show && (
         <UserCursorMovement divRefs={divRefs.current ?? []} name={name ?? ""} />
       )}
-      <h1 className="text-2xl">Fast Api Websocket Chats</h1>
+      {/* <h1 className="text-2xl">Fast Api Websocket Chats</h1>
       <div className="flex flex-col gap-y-2">
         <button
           // onClick={() => socketRef.current?.close()}
@@ -234,7 +248,8 @@ function PlayArea() {
         >
           Send
         </button>
-      </div>
+      </div> */}
+      <Canvas />
     </div>
   );
 }

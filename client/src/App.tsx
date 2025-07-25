@@ -18,9 +18,9 @@ function App() {
         <Route
           path="/room/:roomId"
           element={
-            <ProtectedRoute>
-              <PlayArea />
-            </ProtectedRoute>
+            // <ProtectedRoute>
+            <PlayArea />
+            // </ProtectedRoute>
           }
         />
       </Routes>
