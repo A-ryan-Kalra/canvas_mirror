@@ -54,7 +54,10 @@ function PlayArea() {
       };
       socket!.onmessage = (event: MessageEvent) => {
         const parsed = JSON.parse(event.data);
-        console.log(`${parsed.name} entered the chat room`);
+
+        if (parsed?.type === "message") {
+          console.log(`${parsed.name} entered the chat room`);
+        }
       };
     }
 
