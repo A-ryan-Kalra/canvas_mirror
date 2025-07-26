@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import PickColor from "./pick-color";
 import { atom, useAtom } from "jotai";
+import { isDraggingAtom } from "./user-cursor-movement";
 
 export const stickerDetails = atom<{
   sticketTextAtom: boolean;
@@ -25,6 +26,8 @@ export const stickerDetails = atom<{
   bgColor: "",
 });
 function Canvas() {
+  const [isDragAtom] = useAtom(isDraggingAtom);
+
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const name = searchParams.get("name");
@@ -43,11 +46,13 @@ function Canvas() {
     pickColor: boolean;
     showText: boolean;
     canvasText: boolean;
+    moveSticker?: boolean;
   }>({
     eraser: false,
     pickColor: false,
     showText: false,
     canvasText: false,
+    moveSticker: false,
   });
   const [tools, setTools] = useState<{
     eraser: boolean;
@@ -62,12 +67,8 @@ function Canvas() {
   });
 
   useEffect(() => {
-    const socket = socketProvider.get("message");
-
-    socket?.addEventListener("message", (event: MessageEvent) => {
-      console.log(event.data);
-    });
-  }, []);
+    toolsRef.current.moveSticker = isDragAtom;
+  }, [isDragAtom]);
   function sendDataToUser(
     name: string,
     type: "canvas",
@@ -129,7 +130,6 @@ function Canvas() {
       let offSetX = 0;
       let offSetY = 0;
       isDrawing.current = true;
-
       if (event?.touches?.length > 0) {
         let touch = event?.touches[0];
         (offSetX = touch.clientX), (offSetY = touch.clientY);
@@ -149,6 +149,9 @@ function Canvas() {
     }
 
     function touchMove(event: TouchEvent) {
+      if (toolsRef.current.moveSticker) {
+        return;
+      }
       const now = Date.now();
       if (now - lastSent < 20) return;
       if (toolsRef.current.eraser) {
@@ -244,13 +247,13 @@ function Canvas() {
 
     function handleCanvasPosition(e: MessageEvent) {
       const parsed = JSON.parse(e.data);
-      // console.log(parsed);
-      console.log(ctx);
+      console.log(parsed);
+      // console.log(ctx);
       ctx!.save();
       if (ctx) {
         ctx.strokeStyle = parsed?.strokeStyle;
         ctx.lineWidth = parsed?.lineWidth;
-        console.log(ctx);
+
         ctx.fillStyle = parsed?.strokeStyle;
       }
       if (parsed.status === "erase") {

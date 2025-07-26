@@ -3,8 +3,9 @@ import { useParams } from "react-router-dom";
 import { useSocket } from "../services/use-socket-provider";
 import type { StickerDetailProps } from "../types";
 import { v4 as uuidv4 } from "uuid";
-import { useAtom } from "jotai";
+import { atom, useAtom, useSetAtom } from "jotai";
 import { stickerDetails } from "./canvas";
+export const isDraggingAtom = atom(false);
 
 function UserCursorMovement({
   name,
@@ -13,6 +14,8 @@ function UserCursorMovement({
   name: string;
   divRefs: HTMLDivElement[];
 }) {
+  const [, setIsDragging] = useAtom(isDraggingAtom);
+
   const { roomId } = useParams();
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState({ message: "", name: "" });
@@ -245,6 +248,7 @@ function UserCursorMovement({
 
     divEl.addEventListener("touchstart", (e: TouchEvent) => {
       if (e.touches.length > 0) {
+        setIsDragging(true);
         // const touch = e.touches[0];
         const react = divEl.getBoundingClientRect();
 
@@ -269,8 +273,8 @@ function UserCursorMovement({
     document.addEventListener("touchmove", (e) => {
       if (isDragging && e.touches.length > 0) {
         const touch = e.touches[0];
-        divEl.style.left = `${touch.clientX}px`;
-        divEl.style.top = `${touch.clientY}px`;
+        divEl.style.left = `${touch.clientX - divEl.clientWidth / 2}px`;
+        divEl.style.top = `${touch.clientY - divEl.clientHeight / 2}px`;
 
         const data = {
           x: touch.clientX - offsetX,
@@ -305,6 +309,7 @@ function UserCursorMovement({
     });
     document.addEventListener("touchend", () => {
       isDragging = false;
+      setIsDragging(false);
     });
 
     document.addEventListener("mouseup", () => {
