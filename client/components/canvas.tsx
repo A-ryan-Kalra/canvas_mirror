@@ -69,13 +69,14 @@ function Canvas() {
   useEffect(() => {
     toolsRef.current.moveSticker = isDragAtom;
   }, [isDragAtom]);
+
   function sendDataToUser(
     name: string,
     type: "canvas",
     status: "draw" | "erase" | "stop" | "text",
     position?: { offsetX?: number; offsetY?: number },
     strokeStyle?: string,
-    strokeSize?: number,
+    lineWidth?: number,
     textStyle?: string,
     fillText?: string
   ) {
@@ -85,7 +86,7 @@ function Canvas() {
       status,
       type: type,
       strokeStyle,
-      strokeSize,
+      lineWidth,
       textStyle,
       fillText,
       innerWidth: window.innerWidth,
@@ -153,7 +154,7 @@ function Canvas() {
         return;
       }
       const now = Date.now();
-      if (now - lastSent < 20) return;
+      if (now - lastSent < 10) return;
       if (toolsRef.current.eraser) {
         const touch = event.touches[0];
         setEraserPosition({ x: touch.clientX, y: touch.clientY });
@@ -208,6 +209,7 @@ function Canvas() {
         ctx.lineJoin = "round";
         ctx.lineCap = "round";
         ctx.lineTo(offsetX, offsetY);
+        ctx.stroke();
         // ctx.translate(offsetX, offsetY);
         // ctx.font = "20px Arial";
         // console.log(ctx.lineWidth);
@@ -221,7 +223,6 @@ function Canvas() {
         // ctx.arc(offsetX, offsetY, Math.PI, 0, Math.PI * 2); // full circle
         // ctx.fill(); // for filled
         // or
-        ctx.stroke();
         sendDataToUser(
           name as string,
           "canvas",
@@ -247,7 +248,7 @@ function Canvas() {
 
     function handleCanvasPosition(e: MessageEvent) {
       const parsed = JSON.parse(e.data);
-      console.log(parsed);
+
       // console.log(ctx);
       ctx!.save();
       if (ctx) {

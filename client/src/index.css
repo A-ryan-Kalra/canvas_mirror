@@ -5,3 +5,12 @@
   overflow-x: auto ;
   cursor: grab;
 } */
+
+canvas {
+  -webkit-tap-highlight-color: transparent; /* iOS */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  touch-action: none;
+}
