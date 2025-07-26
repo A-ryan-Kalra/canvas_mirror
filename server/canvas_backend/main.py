@@ -1,6 +1,6 @@
 import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from .schemas import user, cursorMovement, stickerMovement
+from .schemas import user, cursorMovement, removeSocket
 from typing import Dict, List
 
 # from fastapi.responses import HTMLResponse
@@ -63,20 +63,20 @@ async def track_cursor(websocket: WebSocket, room: int):
     # await websocket.accept()
 
     name = websocket.query_params.get("name")
-    await stickerMovement.connect(websocket, room, name)
+    await removeSocket.connect(websocket, room, name)
     try:
         while True:
             data = await websocket.receive_text()
             print("Remove Socket\n ", data)
 
-            await stickerMovement.broadcast(data, room, name, websocket)
+            await removeSocket.broadcast(data, room, name, websocket)
 
     except Exception as error:
         print(f"\nSomething went wrong {websocket} \n", error)
         print("Remove Socket Error\n ", error)
 
-        stickerMovement.disconnect(websocket, room, name)
-        await stickerMovement.broadcast(
+        removeSocket.disconnect(websocket, room, name)
+        await removeSocket.broadcast(
             {"message": f"Client Id {name} left the chat.", "name": name},
             room,
             websocket,
