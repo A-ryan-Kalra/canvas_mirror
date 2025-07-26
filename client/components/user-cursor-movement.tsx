@@ -166,30 +166,33 @@ function UserCursorMovement({
 
     divEl.addEventListener("keydown", (e) => {
       setStopMessageSocket(true);
-      const allowedKeys = [
-        "Backspace",
-        "Enter",
-        "ArrowLeft",
-        "ArrowRight",
-        "ArrowUp",
-        "ArrowDown",
-      ];
-      const shortcuts =
-        (e.metaKey || e.ctrlKey) &&
-        ["a", "c", "v"].includes(e.key.toLowerCase());
 
-      const allowed = allowedKeys.includes(e.key) || shortcuts;
-      if (divEl.textContent && divEl.textContent.length > 29 && !allowed) {
-        if (clearMessageSocketTimer) {
-          clearTimeout(clearMessageSocketTimer);
-        }
-        clearMessageSocketTimer = setTimeout(() => {
-          setStopMessageSocket(false);
-        }, 500);
+      //Restrict users to type over 30 words
 
-        e.preventDefault();
-        return;
-      }
+      // const allowedKeys = [
+      //   "Backspace",
+      //   "Enter",
+      //   "ArrowLeft",
+      //   "ArrowRight",
+      //   "ArrowUp",
+      //   "ArrowDown",
+      // ];
+      // const shortcuts =
+      //   (e.metaKey || e.ctrlKey) &&
+      //   ["a", "c", "v"].includes(e.key.toLowerCase());
+
+      // const allowed = allowedKeys.includes(e.key) || shortcuts;
+      // if (divEl.textContent && divEl.textContent.length > 29 && !allowed) {
+      //   if (clearMessageSocketTimer) {
+      //     clearTimeout(clearMessageSocketTimer);
+      //   }
+      //   clearMessageSocketTimer = setTimeout(() => {
+      //     setStopMessageSocket(false);
+      //   }, 500);
+
+      //   e.preventDefault();
+      //   return;
+      // }
 
       const now = Date.now();
       if (now - lastSent < 20) return;
@@ -341,8 +344,8 @@ function UserCursorMovement({
               setInput("");
             }
           }}
-          maxLength={30}
-          placeholder="Max 30 words"
+          // maxLength={30}
+          // placeholder="Max 30 words"
           ref={inputRef}
           style={{
             width: "150px",

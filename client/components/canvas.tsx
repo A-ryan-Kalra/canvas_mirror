@@ -153,12 +153,11 @@ function Canvas() {
       if (now - lastSent < 20) return;
       if (toolsRef.current.eraser) {
         const touch = event.touches[0];
-        console.log({ x: touch.clientX, y: touch.clientY });
         setEraserPosition({ x: touch.clientX, y: touch.clientY });
         drawCanvas(touch.clientX, touch.clientY);
       } else {
         const { offSetX, offSetY } = touchStart(event);
-        console.log({ offSetX, offSetY });
+
         drawCanvas(offSetX, offSetY);
       }
       lastSent = now;
@@ -203,7 +202,7 @@ function Canvas() {
       } else {
         ctx.globalCompositeOperation = "source-over";
         // ctx.lineWidth = 1;
-
+        ctx.lineJoin = "round";
         ctx.lineCap = "round";
         ctx.lineTo(offsetX, offsetY);
         // ctx.translate(offsetX, offsetY);
@@ -237,6 +236,7 @@ function Canvas() {
       if (!isDrawing.current) return;
 
       const { offsetX, offsetY } = getMousePosition(event);
+
       drawCanvas(offsetX, offsetY);
 
       lastSent = now;
@@ -244,7 +244,8 @@ function Canvas() {
 
     function handleCanvasPosition(e: MessageEvent) {
       const parsed = JSON.parse(e.data);
-      console.log(parsed);
+      // console.log(parsed);
+      console.log(ctx);
       ctx!.save();
       if (ctx) {
         ctx.strokeStyle = parsed?.strokeStyle;
@@ -261,12 +262,6 @@ function Canvas() {
             window.innerWidth,
           ((parsed.position?.offsetY - size / 2) / parsed.innerHeight) *
             window.innerHeight,
-          size,
-          size
-        );
-        ctx!.rect(
-          parsed.position?.offsetX - size / 2,
-          parsed.position?.offsetX - size / 2,
           size,
           size
         );
@@ -389,7 +384,6 @@ function Canvas() {
       canvas.removeEventListener("mousemove", draw);
       canvas.removeEventListener("mouseup", stopDrawing);
       canvas.removeEventListener("mouseout", stopDrawing);
-      window.removeEventListener("mousemove", handleEraser);
       window.removeEventListener("mousedown", showCanvasTextPosition);
       window.removeEventListener("keydown", closeAllTools);
       window.removeEventListener("resize", resizeCanvas);
@@ -443,31 +437,6 @@ function Canvas() {
         <ul className="flex flex-col items-center gap-y-4 p-1 w-full h-full">
           <li
             className={`relative cursor-pointer ${
-              tools.eraser
-                ? " rounded-md border-slate-500 "
-                : " border-transparent"
-            } border-[1px] p-1`}
-            onClick={() => {
-              setShowStickerDetails(() => ({
-                bgColor: (ctx?.strokeStyle as unknown as string) ?? "",
-                sticketTextAtom: false,
-              }));
-              toolsRef.current.eraser = true;
-              toolsRef.current.canvasText = false;
-              toolsRef.current.pickColor = false;
-              toolsRef.current.showText = false;
-              setTools((prev) => ({
-                penSize: false,
-                pickColor: false,
-                eraser: true,
-                canvasText: false,
-              }));
-            }}
-          >
-            <Eraser className={`${tools.eraser ? "fill-slate-300" : ""}`} />
-          </li>
-          <li
-            className={`relative cursor-pointer ${
               tools.pickColor
                 ? " rounded-md border-slate-500 "
                 : " border-transparent"
@@ -507,6 +476,32 @@ function Canvas() {
                 />
               )}
             </div>
+          </li>
+          <li
+            className={`relative cursor-pointer ${
+              tools.eraser
+                ? " rounded-md border-slate-500 "
+                : " border-transparent"
+            } border-[1px] p-1`}
+            onClick={(e) => {
+              setShowStickerDetails(() => ({
+                bgColor: (ctx?.strokeStyle as unknown as string) ?? "",
+                sticketTextAtom: false,
+              }));
+
+              toolsRef.current.eraser = true;
+              toolsRef.current.canvasText = false;
+              toolsRef.current.pickColor = false;
+              toolsRef.current.showText = false;
+              setTools((prev) => ({
+                penSize: false,
+                pickColor: false,
+                eraser: true,
+                canvasText: false,
+              }));
+            }}
+          >
+            <Eraser className={`${tools.eraser ? "fill-slate-300" : ""}`} />
           </li>
           <li
             onClick={() => {
@@ -552,7 +547,7 @@ function Canvas() {
               toolsRef.current.eraser = false;
               toolsRef.current.pickColor = false;
               toolsRef.current.showText = false;
-              console.log(ctx!.strokeStyle);
+              ctx!.globalCompositeOperation = "source-over";
               ctx!.fillStyle = ctx!.strokeStyle;
               setTools((prev) => ({
                 penSize: false,
@@ -581,7 +576,7 @@ function Canvas() {
                 <input
                   ref={inputRef}
                   // maxLength={30}
-                  placeholder="Max 30 words"
+                  placeholder=""
                   style={{
                     width: "150px",
                     height: "30px",

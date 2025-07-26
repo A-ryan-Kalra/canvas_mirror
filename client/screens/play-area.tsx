@@ -228,7 +228,7 @@ function PlayArea() {
   // let date = new Date().getMilliseconds();
 
   return (
-    <div className="h-full w-full">
+    <div className="h-full w-full ">
       {userData.length > 0 &&
         userData.map((data: UserDetailsProps, index) => (
           <CursorMovement position={{ ...data }} key={index} />
@@ -240,15 +240,6 @@ function PlayArea() {
       {show && (
         <UserCursorMovement divRefs={divRefs.current ?? []} name={name ?? ""} />
       )}
-      {/* <h1 className="text-2xl">Fast Api Websocket Chats</h1>
-      <div className="flex flex-col gap-y-2">
-        <button
-          // onClick={() => socketRef.current?.close()}
-          className="hover:bg-blue-600 cursor-pointer rounded-md w-fit p-2 text-black border-[1px] border-slate-400 hover:text-white"
-        >
-          Send
-        </button>
-      </div> */}
       <Canvas />
     </div>
   );
