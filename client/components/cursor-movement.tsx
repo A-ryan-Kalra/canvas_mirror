@@ -49,16 +49,22 @@ function CursorMovement({ position }: CursorMovementProps) {
       socket!.onmessage = (event: MessageEvent) => {
         const parsed = JSON.parse(event.data);
         const message = parsed ?? {};
-        if (message.name !== name) setMessages(JSON.parse(event.data));
+
+        if (message.name !== name && message.type === "message") {
+          setMessages(JSON.parse(event.data));
+        }
+        // else {
+        //   console.log(event.data);
+        // }
       };
     }
 
     // window.addEventListener("keydown", () => sendMessage(input));
 
-    return () => {
-      // socket?.close();
-      // window.removeEventListener("keydown", () => sendMessage(input));
-    };
+    // return () => {
+    // socket?.close();
+    // window.removeEventListener("keydown", () => sendMessage(input));
+    // };
   }, []);
 
   return (

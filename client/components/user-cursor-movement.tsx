@@ -3,6 +3,10 @@ import { useParams } from "react-router-dom";
 import { useSocket } from "../services/use-socket-provider";
 import type { StickerDetailProps } from "../types";
 import { v4 as uuidv4 } from "uuid";
+import { atom, useAtom, useSetAtom } from "jotai";
+import { stickerDetails } from "./canvas";
+export const isDraggingAtom = atom(false);
+
 function UserCursorMovement({
   name,
   divRefs,
@@ -10,6 +14,8 @@ function UserCursorMovement({
   name: string;
   divRefs: HTMLDivElement[];
 }) {
+  const [, setIsDragging] = useAtom(isDraggingAtom);
+
   const { roomId } = useParams();
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState({ message: "", name: "" });
@@ -17,6 +23,7 @@ function UserCursorMovement({
   const { socketProvider } = useSocket();
   const [showInput, setShowInput] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [showStickerDetails] = useAtom(stickerDetails);
 
   const [userCursor, setUserCursor] = useState<{
     x: number;
@@ -35,15 +42,18 @@ function UserCursorMovement({
 
     const handleMouseDown = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-
-      if (target.classList.contains("dynamic-input")) {
+      // if (showStickerDetails.sticketTextAtom)
+      if (
+        target.classList.contains("dynamic-input") ||
+        !showStickerDetails.sticketTextAtom
+      ) {
         setShowInput(false);
         return;
       }
 
       if (
         inputRef.current &&
-        !inputRef.current.contains(event.target as Node)
+        inputRef?.current!.contains(event.target as Node)
       ) {
         setShowInput(false);
         return;
@@ -75,12 +85,12 @@ function UserCursorMovement({
     return () => {
       window.removeEventListener("mousedown", handleMouseDown);
     };
-  }, [socketProvider]);
+  }, [socketProvider, showStickerDetails.sticketTextAtom]);
 
   useEffect(() => {
     const sendMessage = () => {
       if (socketProvider.get("message")) {
-        const data = { name, message: input };
+        const data = { type: "message", name, message: input };
 
         socketProvider.get("message")!.send(JSON.stringify(data));
       }
@@ -159,30 +169,33 @@ function UserCursorMovement({
 
     divEl.addEventListener("keydown", (e) => {
       setStopMessageSocket(true);
-      const allowedKeys = [
-        "Backspace",
-        "Enter",
-        "ArrowLeft",
-        "ArrowRight",
-        "ArrowUp",
-        "ArrowDown",
-      ];
-      const shortcuts =
-        (e.metaKey || e.ctrlKey) &&
-        ["a", "c", "v"].includes(e.key.toLowerCase());
 
-      const allowed = allowedKeys.includes(e.key) || shortcuts;
-      if (divEl.textContent && divEl.textContent.length > 29 && !allowed) {
-        if (clearMessageSocketTimer) {
-          clearTimeout(clearMessageSocketTimer);
-        }
-        clearMessageSocketTimer = setTimeout(() => {
-          setStopMessageSocket(false);
-        }, 500);
+      //Restrict users to type over 30 words
 
-        e.preventDefault();
-        return;
-      }
+      // const allowedKeys = [
+      //   "Backspace",
+      //   "Enter",
+      //   "ArrowLeft",
+      //   "ArrowRight",
+      //   "ArrowUp",
+      //   "ArrowDown",
+      // ];
+      // const shortcuts =
+      //   (e.metaKey || e.ctrlKey) &&
+      //   ["a", "c", "v"].includes(e.key.toLowerCase());
+
+      // const allowed = allowedKeys.includes(e.key) || shortcuts;
+      // if (divEl.textContent && divEl.textContent.length > 29 && !allowed) {
+      //   if (clearMessageSocketTimer) {
+      //     clearTimeout(clearMessageSocketTimer);
+      //   }
+      //   clearMessageSocketTimer = setTimeout(() => {
+      //     setStopMessageSocket(false);
+      //   }, 500);
+
+      //   e.preventDefault();
+      //   return;
+      // }
 
       const now = Date.now();
       if (now - lastSent < 20) return;
@@ -235,6 +248,7 @@ function UserCursorMovement({
 
     divEl.addEventListener("touchstart", (e: TouchEvent) => {
       if (e.touches.length > 0) {
+        setIsDragging(true);
         // const touch = e.touches[0];
         const react = divEl.getBoundingClientRect();
 
@@ -259,8 +273,8 @@ function UserCursorMovement({
     document.addEventListener("touchmove", (e) => {
       if (isDragging && e.touches.length > 0) {
         const touch = e.touches[0];
-        divEl.style.left = `${touch.clientX}px`;
-        divEl.style.top = `${touch.clientY}px`;
+        divEl.style.left = `${touch.clientX - divEl.clientWidth / 2}px`;
+        divEl.style.top = `${touch.clientY - divEl.clientHeight / 2}px`;
 
         const data = {
           x: touch.clientX - offsetX,
@@ -295,6 +309,7 @@ function UserCursorMovement({
     });
     document.addEventListener("touchend", () => {
       isDragging = false;
+      setIsDragging(false);
     });
 
     document.addEventListener("mouseup", () => {
@@ -334,8 +349,8 @@ function UserCursorMovement({
               setInput("");
             }
           }}
-          maxLength={30}
-          placeholder="Max 30 words"
+          // maxLength={30}
+          // placeholder="Max 30 words"
           ref={inputRef}
           style={{
             width: "150px",

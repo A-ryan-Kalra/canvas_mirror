@@ -14,7 +14,7 @@ function StickerMovement({ position }: StickerMovementProps) {
       style={{
         minWidth: "50px",
         maxWidth: "200px",
-        maxHeight: "100px",
+        // maxHeight: "100px",
         // resize: "both",
         // whiteSpace: "wrap",
         wordBreak: "break-word",
@@ -23,7 +23,7 @@ function StickerMovement({ position }: StickerMovementProps) {
         outline: "none",
         padding: "0.55rem",
         background: "rgba(37, 235, 221, 0.6)",
-        cursor: "grab",
+        cursor: "default",
         position: "fixed",
         zIndex: 99999,
         left: `${(position.x / position.width) * window.innerWidth}px`,
