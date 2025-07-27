@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CursorMovement from "../components/cursor-movement";
 import UserCursorMovement from "../components/user-cursor-movement";
 import { useSocket } from "../services/use-socket-provider";
@@ -6,11 +6,7 @@ import { useLocation, useParams } from "react-router-dom";
 import StickerMovement from "../components/sticker-movement";
 import Canvas from "../components/canvas";
 
-import type {
-  StickerDetailProps,
-  StickerMovementProps,
-  UserDetailsProps,
-} from "../types";
+import type { StickerDetailProps, UserDetailsProps } from "../types";
 
 function PlayArea() {
   // const socketRef = useRef<WebSocket>(null);

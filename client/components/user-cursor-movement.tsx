@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { useParams } from "react-router-dom";
+// import { useParams } from "react-router-dom";
 import { useSocket } from "../services/use-socket-provider";
 import type { StickerDetailProps } from "../types";
 import { v4 as uuidv4 } from "uuid";
-import { atom, useAtom, useSetAtom } from "jotai";
+import { atom, useAtom } from "jotai";
 import { stickerDetails } from "./canvas";
 export const isDraggingAtom = atom(false);
 
@@ -16,9 +16,9 @@ function UserCursorMovement({
 }) {
   const [, setIsDragging] = useAtom(isDraggingAtom);
 
-  const { roomId } = useParams();
+  // const { roomId } = useParams();
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState({ message: "", name: "" });
+  // const [messages, setMessages] = useState({ message: "", name: "" });
   const [stopMessageSocket, setStopMessageSocket] = useState(false);
   const { socketProvider } = useSocket();
   const [showInput, setShowInput] = useState<boolean>(false);
@@ -167,7 +167,7 @@ function UserCursorMovement({
     });
     let clearMessageSocketTimer: number = 0;
 
-    divEl.addEventListener("keydown", (e) => {
+    divEl.addEventListener("keydown", () => {
       setStopMessageSocket(true);
 
       //Restrict users to type over 30 words
@@ -224,7 +224,7 @@ function UserCursorMovement({
 
     const handleMouseMove = (event: MouseEvent) => {
       if (isDragging) {
-        const now = Date.now();
+        // const now = Date.now();
         // if (now - lastSent < 20) return;
         divEl.style.left = `${event.clientX - offsetX}px`;
         divEl.style.top = `${event.clientY - offsetY}px`;

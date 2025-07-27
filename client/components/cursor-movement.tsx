@@ -1,28 +1,28 @@
-import { useEffect, useRef, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { useSocket } from "../services/use-socket-provider";
 import type { CursorMovementProps } from "../types";
 
 function CursorMovement({ position }: CursorMovementProps) {
-  const socketRef = useRef<WebSocket>(null);
-  const { roomId } = useParams();
-  const [input, setInput] = useState("");
+  // const socketRef = useRef<WebSocket>(null);
+  // const { roomId } = useParams();
+  // const [input, setInput] = useState("");
   const [messages, setMessages] = useState({ message: "", name: "" });
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const name = searchParams.get("name");
 
-  const [userCursor, setUserCursor] = useState<{
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  }>({
-    x: 0,
-    y: 0,
-    width: 0,
-    height: 0,
-  });
+  // const [userCursor, setUserCursor] = useState<{
+  //   x: number;
+  //   y: number;
+  //   width: number;
+  //   height: number;
+  // }>({
+  //   x: 0,
+  //   y: 0,
+  //   width: 0,
+  //   height: 0,
+  // });
   const { socketProvider } = useSocket();
 
   // useEffect(() => {

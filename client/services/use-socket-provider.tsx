@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef } from "react";
+import { createContext, useContext, useRef } from "react";
 
 const SocketContext = createContext<Map<string, WebSocket>>(new Map());
 export function useSocket() {
