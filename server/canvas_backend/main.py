@@ -2,15 +2,19 @@ import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from .schemas import user, cursorMovement, removeSocket
 from typing import Dict, List
+from dotenv import load_dotenv
+import os
 
 # from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+load_dotenv()
 
+WEBSITE_URL = os.getenv("WEBSITE_URL")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[WEBSITE_URL],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
