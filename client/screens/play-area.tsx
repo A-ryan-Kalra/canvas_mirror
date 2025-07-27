@@ -27,8 +27,11 @@ function PlayArea() {
   );
 
   useEffect(() => {
+    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
     const socket = new WebSocket(
-      `ws://localhost:8000/ws/message/${roomId}?name=${name}`
+      `${protocol}://${
+        import.meta.env.VITE_WEBSITE_URL
+      }/ws/message/${roomId}?name=${name}`
       // `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/message/${roomId}?name=${name}`
     );
     // const ws = new WebSocket(
@@ -66,7 +69,9 @@ function PlayArea() {
     //   `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/cursor/${roomId}?name=${name}`
     // );
     const socketCursor = new WebSocket(
-      `ws://localhost:8000/ws/cursor/${roomId}?name=${name}`
+      `${protocol}://${
+        import.meta.env.VITE_WEBSITE_URL
+      }/ws/cursor/${roomId}?name=${name}`
       // `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/cursor/${roomId}?name=${name}`
     );
 
@@ -172,8 +177,12 @@ function PlayArea() {
   }, []);
 
   useEffect(() => {
+    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+
     const removePlayerSocket = new WebSocket(
-      `ws://localhost:8000/ws/remove/${roomId}?name=${name}`
+      `${protocol}://${
+        import.meta.env.VITE_WEBSITE_URL
+      }/ws/remove/${roomId}?name=${name}`
       // `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/remove/${roomId}?name=${name}`
     );
 
