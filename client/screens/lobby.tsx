@@ -1,12 +1,12 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSocket } from "../services/use-socket-provider";
+// import { useSocket } from "../services/use-socket-provider";
 
 function Lobby() {
   const navigate = useNavigate();
   const [details, setDetails] = useState({ name: "", room: "" });
-  const [isRoomFull, setIsRoomFull] = useState(false);
-  const { socketProvider } = useSocket();
+  // const [isRoomFull, setIsRoomFull] = useState(false);
+  // const { socketProvider } = useSocket();
 
   const joinRoom = (e: FormEvent) => {
     e.preventDefault();
@@ -96,11 +96,11 @@ function Lobby() {
                 className="bg-zinc-200 p-1 border-none outline-none focus-visible:ring-0"
               />
             </div>
-            {isRoomFull && (
+            {/* {isRoomFull && (
               <h1 className="text-red-500 ml-auto">
                 Oops, Room is full — check back shortly.
               </h1>
-            )}
+            )} */}
             <button className="bg-cyan-400 mt-2 w-fit ml-auto hover:scale-110 transition duration-300 px-10 cursor-pointer py-2 rounded-2xl ">
               Submit
             </button>

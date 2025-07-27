@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CursorMovement from "../components/cursor-movement";
 import UserCursorMovement from "../components/user-cursor-movement";
 import { useSocket } from "../services/use-socket-provider";
@@ -6,11 +6,7 @@ import { useLocation, useParams } from "react-router-dom";
 import StickerMovement from "../components/sticker-movement";
 import Canvas from "../components/canvas";
 
-import type {
-  StickerDetailProps,
-  StickerMovementProps,
-  UserDetailsProps,
-} from "../types";
+import type { StickerDetailProps, UserDetailsProps } from "../types";
 
 function PlayArea() {
   // const socketRef = useRef<WebSocket>(null);
@@ -27,8 +23,11 @@ function PlayArea() {
   );
 
   useEffect(() => {
+    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
     const socket = new WebSocket(
-      `ws://localhost:8000/ws/message/${roomId}?name=${name}`
+      `${protocol}://${
+        import.meta.env.VITE_WEBSITE_URL
+      }/ws/message/${roomId}?name=${name}`
       // `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/message/${roomId}?name=${name}`
     );
     // const ws = new WebSocket(
@@ -66,7 +65,9 @@ function PlayArea() {
     //   `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/cursor/${roomId}?name=${name}`
     // );
     const socketCursor = new WebSocket(
-      `ws://localhost:8000/ws/cursor/${roomId}?name=${name}`
+      `${protocol}://${
+        import.meta.env.VITE_WEBSITE_URL
+      }/ws/cursor/${roomId}?name=${name}`
       // `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/cursor/${roomId}?name=${name}`
     );
 
@@ -172,8 +173,12 @@ function PlayArea() {
   }, []);
 
   useEffect(() => {
+    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+
     const removePlayerSocket = new WebSocket(
-      `ws://localhost:8000/ws/remove/${roomId}?name=${name}`
+      `${protocol}://${
+        import.meta.env.VITE_WEBSITE_URL
+      }/ws/remove/${roomId}?name=${name}`
       // `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/remove/${roomId}?name=${name}`
     );
 

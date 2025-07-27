@@ -1,10 +1,4 @@
-import {
-  createElement,
-  useEffect,
-  useRef,
-  useState,
-  type FormEvent,
-} from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useSocket } from "../services/use-socket-provider";
 import { useLocation } from "react-router-dom";
 import {
@@ -487,7 +481,7 @@ function Canvas() {
                 ? " rounded-md border-slate-500 "
                 : " border-transparent"
             } border-[1px] p-1`}
-            onClick={(e) => {
+            onClick={() => {
               setShowStickerDetails(() => ({
                 bgColor: (ctx?.strokeStyle as unknown as string) ?? "",
                 sticketTextAtom: false,
@@ -497,7 +491,7 @@ function Canvas() {
               toolsRef.current.canvasText = false;
               toolsRef.current.pickColor = false;
               toolsRef.current.showText = false;
-              setTools((prev) => ({
+              setTools(() => ({
                 penSize: false,
                 pickColor: false,
                 eraser: true,
@@ -553,7 +547,7 @@ function Canvas() {
               toolsRef.current.showText = false;
               ctx!.globalCompositeOperation = "source-over";
               ctx!.fillStyle = ctx!.strokeStyle;
-              setTools((prev) => ({
+              setTools(() => ({
                 penSize: false,
                 eraser: false,
                 pickColor: false,
@@ -628,7 +622,7 @@ function Canvas() {
               toolsRef.current.eraser = false;
               toolsRef.current.pickColor = false;
               toolsRef.current.showText = false;
-              setShowStickerDetails((prev) => ({
+              setShowStickerDetails(() => ({
                 bgColor: (ctx?.strokeStyle as unknown as string) ?? "",
                 sticketTextAtom: true,
               }));

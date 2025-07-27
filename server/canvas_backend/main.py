@@ -1,20 +1,49 @@
 import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from .schemas import user, cursorMovement, removeSocket
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
 from typing import Dict, List
+from dotenv import load_dotenv
+import os
+from pathlib import Path
 
 # from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+load_dotenv()
 
+WEBSITE_URL = os.getenv("WEBSITE_URL")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[WEBSITE_URL],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+DIST_DIR = BASE_DIR / "client" / "dist"
+print("Base from", DIST_DIR)
+
+
+app.mount(
+    "/static",
+    StaticFiles(directory=DIST_DIR),
+    name="static",
+)
+
+
+@app.api_route("/{full_path:path}", methods=["GET"])
+def serve_spa(full_path: str):
+    # If the file actually exists in /dist, serve it directly
+    requested = DIST_DIR / full_path.lstrip("/")
+    if requested.is_file():
+        return FileResponse(requested)
+    # Otherwise let React-Router handle the route
+    return FileResponse(DIST_DIR / "index.html")
 
 
 @app.get("/")
