@@ -60,7 +60,7 @@ function PlayArea() {
       };
     }
 
-    let lastSent = 0;
+    // let lastSent = 0;
     // const ws1 = new WebSocket(
     //   `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/cursor/${roomId}?name=${name}`
     // );

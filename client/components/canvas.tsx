@@ -94,7 +94,7 @@ function Canvas() {
     if (!canvas) return;
     const context = canvas.getContext("2d");
     if (!context) return;
-    let lastSent = 0;
+    // let lastSent = 0;
 
     setCtx(context);
     if (!ctx) return;
