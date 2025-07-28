@@ -31,6 +31,7 @@ function Canvas() {
   const [eraserPosition, setEraserPosition] = useState({ x: 0, y: 0 });
   const [showCanvasText, setShowCanvasText] = useState({ x: -100, y: -100 });
   const inputRef = useRef<HTMLInputElement>(null);
+  const canvasMap = useRef<{ [key: string]: any }>({});
   const [showStickerDetails, setShowStickerDetails] = useAtom(stickerDetails);
 
   const isDrawing = useRef<boolean>(false);
@@ -182,6 +183,20 @@ function Canvas() {
     };
     const drawCanvas = (offsetX: number, offsetY: number) => {
       if (toolsRef.current.eraser) {
+        for (let con in canvasMap.current) {
+          canvasMap.current[con]["ctxRemoteUser"].globalCompositeOperation =
+            "destination-out";
+          const size = 100;
+          canvasMap.current[con]["ctxRemoteUser"].rect(
+            offsetX - size / 2,
+            offsetY - size / 2,
+            size,
+            size
+          );
+          canvasMap.current[con]["ctxRemoteUser"].fill();
+          canvasMap.current[con]["ctxRemoteUser"].beginPath();
+          canvasMap.current[con]["ctxRemoteUser"].moveTo(offsetX, offsetY);
+        }
         ctx.globalCompositeOperation = "destination-out";
         const size = 100;
         ctx.rect(offsetX - size / 2, offsetY - size / 2, size, size);
@@ -240,21 +255,80 @@ function Canvas() {
       lastSent = now;
     };
 
+    function createCanvasForUser(userId: string) {
+      if (canvasMap.current[userId]) return canvasMap.current[userId];
+
+      const canvas = document.createElement("canvas");
+      if (window.innerWidth < 1200) {
+        dpr = 1;
+      } else {
+        dpr = window.devicePixelRatio || 1;
+      }
+
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      canvas.style.width = `${window.innerWidth}px`;
+      canvas.style.height = `${window.innerHeight}px`;
+      canvas.style.backgroundColor = "transparent";
+      canvas.style.pointerEvents = "none";
+      canvas.style.zIndex = "99999";
+      canvas.style.position = "absolute";
+      // document.body.appendChild(canvas);
+      document.getElementById("canvas-container")!.appendChild(canvas);
+
+      const ctxRemoteUser = canvas!.getContext("2d");
+      if (window.innerWidth < 1200) {
+        dpr = 1;
+      } else {
+        dpr = window.devicePixelRatio || 1;
+      }
+      ctxRemoteUser!.scale(dpr, dpr);
+      canvasMap.current[userId] = { canvas, ctxRemoteUser };
+      return { canvas, ctxRemoteUser };
+    }
     function handleCanvasPosition(e: MessageEvent) {
       const parsed = JSON.parse(e.data);
 
-      // console.log(ctx);
-      ctx!.save();
-      if (ctx) {
-        ctx.strokeStyle = parsed?.strokeStyle;
-        ctx.lineWidth = parsed?.lineWidth;
+      const { canvas, ctxRemoteUser } = createCanvasForUser(parsed.name);
+      console.log(canvas);
 
-        ctx.fillStyle = parsed?.strokeStyle;
+      // ctxRemoteUser!.lineWidth = 5;
+      // ctxRemoteUser!.fill();
+
+      // console.log(ctx);
+
+      // ctx!.save();
+      if (ctxRemoteUser) {
+        ctxRemoteUser.strokeStyle = parsed?.strokeStyle;
+        ctxRemoteUser.lineWidth = parsed?.lineWidth;
+
+        ctxRemoteUser.fillStyle = parsed?.strokeStyle;
       }
       if (parsed.status === "erase") {
+        for (let con in canvasMap.current) {
+          canvasMap.current[con]["ctxRemoteUser"]!.globalCompositeOperation =
+            "destination-out";
+          const size = 100;
+          canvasMap.current[con]["ctxRemoteUser"]!.rect(
+            ((parsed.position?.offsetX - size / 2) / parsed.innerWidth) *
+              window.innerWidth,
+            ((parsed.position?.offsetY - size / 2) / parsed.innerHeight) *
+              window.innerHeight,
+            size,
+            size
+          );
+
+          canvasMap.current[con]["ctxRemoteUser"]!.fill();
+          canvasMap.current[con]["ctxRemoteUser"]!.beginPath();
+          canvasMap.current[con]["ctxRemoteUser"]!.moveTo(
+            (parsed?.position?.offsetX / parsed.innerWidth) * window.innerWidth,
+            (parsed?.position?.offsetY / parsed.innerHeight) *
+              window.innerHeight
+          );
+        }
+
         ctx!.globalCompositeOperation = "destination-out";
         const size = 100;
-
         ctx!.rect(
           ((parsed.position?.offsetX - size / 2) / parsed.innerWidth) *
             window.innerWidth,
@@ -263,32 +337,38 @@ function Canvas() {
           size,
           size
         );
-
         ctx!.fill();
         ctx!.beginPath();
-        ctx!.moveTo(parsed?.position?.offsetX, parsed?.position?.offsetY);
-      } else if (parsed?.status === "stop") {
-        ctx!.beginPath();
-      } else if (parsed.status === "text") {
-        ctx!.font = "20px Arial";
+        ctx!.moveTo(
+          (parsed?.position?.offsetX / parsed.innerWidth) * window.innerWidth,
+          (parsed?.position?.offsetY / parsed.innerHeight) * window.innerHeight
+        );
 
-        ctx!.fillText(
+        // ctxRemoteUser!.save();
+
+        // ctxRemoteUser!.restore();
+      } else if (parsed?.status === "stop") {
+        ctxRemoteUser!.beginPath();
+      } else if (parsed.status === "text") {
+        ctxRemoteUser!.font = "20px Arial";
+
+        ctxRemoteUser!.fillText(
           parsed?.fillText ?? "",
           (parsed?.position?.offsetX / parsed.innerWidth) * window.innerWidth,
           (parsed?.position?.offsetY / parsed.innerHeight) * window.innerHeight
         );
       } else {
-        ctx!.globalCompositeOperation = "source-over";
-        // ctx!.strokeStyle = "red";
-        // ctx!.lineWidth = 5;
-        ctx!.lineCap = "round";
-        ctx!.lineTo(
+        ctxRemoteUser!.globalCompositeOperation = "source-over";
+        // ctxRemoteUser!.strokeStyle = "red";
+        // ctxRemoteUser!.lineWidth = 5;
+        ctxRemoteUser!.lineCap = "round";
+        ctxRemoteUser!.lineTo(
           (parsed?.position?.offsetX / parsed.innerWidth) * window.innerWidth,
           (parsed?.position?.offsetY / parsed.innerHeight) * window.innerHeight
         );
-        ctx!.stroke();
+        ctxRemoteUser!.stroke();
       }
-      ctx!.restore();
+      // ctx!.restore();
       // ctx?.lineTo(parsed.position?.offsetX, parsed?.position?.offsetY);
     }
 
@@ -643,6 +723,11 @@ function Canvas() {
           </li>
         </ul>
       </div>
+      <div
+        id="canvas-container"
+        className=""
+        style={{ pointerEvents: "none", position: "relative" }}
+      ></div>
 
       <canvas
         // style={{ margin: 0, padding: 0 }}

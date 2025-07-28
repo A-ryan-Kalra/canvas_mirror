@@ -70,7 +70,7 @@ function CursorMovement({ position }: CursorMovementProps) {
   return (
     <div
       style={{
-        width: "50px",
+        width: "65px",
         height: "50px",
         position: "fixed",
         borderRadius: "23px",
