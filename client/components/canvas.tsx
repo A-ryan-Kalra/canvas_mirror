@@ -33,7 +33,9 @@ function Canvas() {
   const inputRef = useRef<HTMLInputElement>(null);
   const canvasMap = useRef<{ [key: string]: any }>({});
   const [showStickerDetails, setShowStickerDetails] = useAtom(stickerDetails);
-
+  const [canvasConf, setCanvasConf] = useState<{ textSize: string }>({
+    textSize: "",
+  });
   const isDrawing = useRef<boolean>(false);
   const { socketProvider } = useSocket();
   const toolsRef = useRef<{
@@ -405,10 +407,10 @@ function Canvas() {
         toolsRef.current.pickColor = false;
         toolsRef.current.showText = false;
         toolsRef.current.showText = false;
-        setShowStickerDetails({
-          bgColor: "",
+        setShowStickerDetails((prev) => ({
+          ...prev,
           sticketTextAtom: false,
-        });
+        }));
       }
     }
     const resizeCanvas = () => {
@@ -521,10 +523,7 @@ function Canvas() {
             } border-[1px] p-1`}
             onClick={() => {
               // toolsRef.current.pickColor = true;
-              setShowStickerDetails(() => ({
-                bgColor: (ctx?.strokeStyle as unknown as string) ?? "",
-                sticketTextAtom: false,
-              }));
+
               toolsRef.current.canvasText = false;
               toolsRef.current.eraser = false;
               toolsRef.current.pickColor = false;
@@ -549,7 +548,10 @@ function Canvas() {
                     b: number;
                     a: number;
                   }) => {
-                    ctx!.strokeStyle = `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${rgba.a})`;
+                    setShowStickerDetails(() => ({
+                      bgColor: `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${rgba.a})`,
+                      sticketTextAtom: false,
+                    }));
                   }}
                 />
               )}
@@ -562,8 +564,8 @@ function Canvas() {
                 : " border-transparent"
             } border-[1px] p-1`}
             onClick={() => {
-              setShowStickerDetails(() => ({
-                bgColor: (ctx?.strokeStyle as unknown as string) ?? "",
+              setShowStickerDetails((prev) => ({
+                ...prev,
                 sticketTextAtom: false,
               }));
 
@@ -593,8 +595,8 @@ function Canvas() {
                 pickColor: false,
                 canvasText: false,
               }));
-              setShowStickerDetails(() => ({
-                bgColor: (ctx?.strokeStyle as unknown as string) ?? "",
+              setShowStickerDetails((prev) => ({
+                ...prev,
                 sticketTextAtom: false,
               }));
             }}
@@ -630,7 +632,9 @@ function Canvas() {
                   id="text-size"
                   max={80}
                   defaultValue={5}
-                  onChange={(e) => (ctx!.font = `${e.target.value}px Arial`)}
+                  onChange={(e) => {
+                    setCanvasConf({ textSize: e.target.value });
+                  }}
                 />
               </div>
             </div>
@@ -649,8 +653,8 @@ function Canvas() {
                 pickColor: false,
                 canvasText: true,
               }));
-              setShowStickerDetails(() => ({
-                bgColor: (ctx?.strokeStyle as unknown as string) ?? "",
+              setShowStickerDetails((prev) => ({
+                ...prev,
                 sticketTextAtom: false,
               }));
             }}
@@ -684,9 +688,12 @@ function Canvas() {
                   }}
                   onChange={(e) => {
                     if (ctx) {
-                      ctx.fillStyle = ctx.strokeStyle;
+                      // ctx.fillStyle = ctx.strokeStyle;
+                      ctx!.font = `${canvasConf.textSize}px Arial`;
+                      ctx.fillStyle = showStickerDetails.bgColor;
                       ctx.fillText(
                         e.target.value,
+                        // showStickerDetails.bgColor,
                         showCanvasText.x,
                         showCanvasText.y
                       );
@@ -717,8 +724,8 @@ function Canvas() {
               toolsRef.current.eraser = false;
               toolsRef.current.pickColor = false;
               toolsRef.current.showText = false;
-              setShowStickerDetails(() => ({
-                bgColor: (ctx?.strokeStyle as unknown as string) ?? "",
+              setShowStickerDetails((prev) => ({
+                ...prev,
                 sticketTextAtom: true,
               }));
               setTools(() => ({
