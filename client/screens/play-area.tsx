@@ -135,8 +135,8 @@ function PlayArea() {
     };
 
     const handleMouseMove = (event: MouseEvent) => {
-      const now = Date.now();
-      if (now - lastSent < 10) return;
+      // const now = Date.now();
+      // if (now - lastSent < 10) return;
 
       const data = {
         x: event.clientX,
@@ -152,7 +152,7 @@ function PlayArea() {
         // console.log(data);
 
         socketCursor.send(JSON.stringify(data));
-        lastSent = now;
+        // lastSent = now;
       }
     };
 
