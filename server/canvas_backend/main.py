@@ -26,7 +26,6 @@ app.add_middleware(
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 DIST_DIR = BASE_DIR / "client" / "dist"
-print("Base from", DIST_DIR)
 
 
 app.mount(
@@ -38,11 +37,10 @@ app.mount(
 
 @app.api_route("/{full_path:path}", methods=["GET"])
 def serve_spa(full_path: str):
-    # If the file actually exists in /dist, serve it directly
+    print("Requested: ", full_path.lstrip("/"))
     requested = DIST_DIR / full_path.lstrip("/")
     if requested.is_file():
         return FileResponse(requested)
-    # Otherwise let React-Router handle the route
     return FileResponse(DIST_DIR / "index.html")
 
 

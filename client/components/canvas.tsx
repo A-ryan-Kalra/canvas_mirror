@@ -113,6 +113,7 @@ function Canvas() {
     ctx.scale(dpr, dpr);
     ctx.lineWidth = 5;
     ctx.fill();
+    ctx.font = "20px Arial";
 
     const getMousePosition = (event: MouseEvent) => {
       const react = canvas.getBoundingClientRect();
@@ -611,12 +612,28 @@ function Canvas() {
                 tools.penSize ? "visible" : "invisible"
               }`}
             >
-              <input
-                type="range"
-                max={40}
-                defaultValue={5}
-                onChange={(e) => (ctx!.lineWidth = Number(e.target.value))}
-              />
+              <div className="bg-slate-300 p-1 rounded-md">
+                <label htmlFor="sketch-pen" className="text-xs">
+                  Sketch Pen
+                </label>
+                <input
+                  type="range"
+                  id="sketch-pen"
+                  max={40}
+                  defaultValue={5}
+                  onChange={(e) => (ctx!.lineWidth = Number(e.target.value))}
+                />
+                <label htmlFor="text-size" className="text-xs">
+                  Text Size
+                </label>
+                <input
+                  type="range"
+                  id="text-size"
+                  max={80}
+                  defaultValue={5}
+                  onChange={(e) => (ctx!.font = `${e.target.value}px Arial`)}
+                />
+              </div>
             </div>
           </li>
           <li
@@ -668,8 +685,7 @@ function Canvas() {
                   }}
                   onChange={(e) => {
                     if (ctx) {
-                      ctx.font = "20px Arial";
-                      ctx.fillStyle = ctx.strokeStyle; // text color
+                      ctx.fillStyle = ctx.strokeStyle;
                       ctx.fillText(
                         e.target.value,
                         showCanvasText.x,
