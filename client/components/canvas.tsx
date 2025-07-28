@@ -149,8 +149,8 @@ function Canvas() {
       if (toolsRef.current.moveSticker) {
         return;
       }
-      const now = Date.now();
-      if (now - lastSent < 10) return;
+      // const now = Date.now();
+      // if (now - lastSent < 10) return;
       if (toolsRef.current.eraser) {
         const touch = event.touches[0];
         setEraserPosition({ x: touch.clientX, y: touch.clientY });
@@ -160,7 +160,7 @@ function Canvas() {
 
         drawCanvas(offSetX, offSetY);
       }
-      lastSent = now;
+      // lastSent = now;
     }
 
     const startDrawing = (event: MouseEvent) => {
@@ -245,15 +245,15 @@ function Canvas() {
       }
     };
     const draw = (event: MouseEvent) => {
-      const now = Date.now();
-      if (now - lastSent < 20) return;
+      // const now = Date.now();
+      // if (now - lastSent < 20) return;
       if (!isDrawing.current) return;
 
       const { offsetX, offsetY } = getMousePosition(event);
 
       drawCanvas(offsetX, offsetY);
 
-      lastSent = now;
+      // lastSent = now;
     };
 
     function createCanvasForUser(userId: string) {
@@ -290,8 +290,7 @@ function Canvas() {
     function handleCanvasPosition(e: MessageEvent) {
       const parsed = JSON.parse(e.data);
 
-      const { canvas, ctxRemoteUser } = createCanvasForUser(parsed.name);
-      console.log(canvas);
+      const { ctxRemoteUser } = createCanvasForUser(parsed.name);
 
       // ctxRemoteUser!.lineWidth = 5;
       // ctxRemoteUser!.fill();
