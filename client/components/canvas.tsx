@@ -352,7 +352,7 @@ function Canvas() {
       } else if (parsed?.status === "stop") {
         ctxRemoteUser!.beginPath();
       } else if (parsed.status === "text") {
-        ctxRemoteUser!.font = "20px Arial";
+        // ctxRemoteUser!.font = "20px Arial";
 
         ctxRemoteUser!.fillText(
           parsed?.fillText ?? "",
@@ -548,6 +548,7 @@ function Canvas() {
                     b: number;
                     a: number;
                   }) => {
+                    ctx!.strokeStyle = `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${rgba.a})`;
                     setShowStickerDetails(() => ({
                       bgColor: `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${rgba.a})`,
                       sticketTextAtom: false,
@@ -646,7 +647,7 @@ function Canvas() {
               toolsRef.current.pickColor = false;
               toolsRef.current.showText = false;
               ctx!.globalCompositeOperation = "source-over";
-              ctx!.fillStyle = ctx!.strokeStyle;
+              // ctx!.fillStyle = ctx!.strokeStyle;
               setTools(() => ({
                 penSize: false,
                 eraser: false,
