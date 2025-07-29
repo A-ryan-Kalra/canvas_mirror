@@ -77,11 +77,43 @@ function Lobby() {
       isDragging = false;
     };
 
+    const handleTouchStart = () => {
+      if (imageRef.current) {
+        isDragging = true;
+        offsetWidth = imageRef.current?.offsetWidth;
+      }
+    };
+
+    const handleTouchMove = (event: TouchEvent) => {
+      const touches = event.touches[0];
+      if (imageRef.current && isDragging) {
+        const offsetLeftFromTouch = touches.clientX;
+        widthCovered = Math.round((offsetLeftFromTouch / offsetWidth) * 100);
+        const insetValues = `inset(0 ${100 - widthCovered}% 0 0)`;
+
+        sliderRef.current!.style.right = `${Math.max(
+          Math.min(100 - widthCovered, 100),
+          0
+        )}%`;
+        imageRef.current.style.setProperty("--clip-values", insetValues);
+      }
+    };
+
+    const handleTouchEnd = () => {
+      isDragging = false;
+    };
+
+    window.addEventListener("touchstart", handleTouchStart);
+    window.addEventListener("touchmove", handleTouchMove);
+    window.addEventListener("touchend", handleTouchEnd);
     window.addEventListener("mousedown", handleMouseDown);
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseup", handleMouseUp);
 
     return () => {
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
       window.removeEventListener("mousedown", handleMouseDown);
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
@@ -89,12 +121,12 @@ function Lobby() {
   }, []);
 
   return (
-    <div className="flex  w-full h-[100dvh]  items-center">
+    <div className="flex  w-full h-[100dvh] max-md:flex-col items-center">
       <div className="w-full h-full relative flex-2  p-2 items-center ">
         <div
           ref={sliderRef}
           draggable={false}
-          className={`absolute h-full w-[2px] top-0 right-[0%] z-20 before:content-[''] before:absolute before:w-12 before:bg-slate-300 hover:shadow-amber-900  shadow-2xl before:z-20 before:rounded-full before:p-1 after:w-10 after:content-[''] after:flex after:items-center after:justify-center after:text-center after:absolute after:bg-purple-400 after:h-10 after:rounded-full after:-translate-y-1/2 after:-translate-x-1/2 after:top-[50%] before:-translate-y-1/2 before:-translate-x-1/2 before:top-[50%] bg-neutral-300  after:z-30 before:h-12 transition ease-in-out  cursor-ew-resize noselect `}
+          className={` absolute h-full w-[2px] top-0 right-[0%] z-20 before:content-[''] before:absolute before:w-12 before:bg-slate-300 hover:shadow-amber-900  shadow-2xl before:z-20 before:rounded-full before:p-1 after:w-10 after:content-[''] after:flex after:items-center after:justify-center after:text-center after:absolute after:bg-purple-400 after:h-10 after:rounded-full after:-translate-y-1/2 after:-translate-x-1/2 after:top-[50%] before:-translate-y-1/2 before:-translate-x-1/2 before:top-[50%] bg-neutral-300  after:z-30 before:h-12 transition ease-in-out  cursor-ew-resize noselect `}
         >
           <span className="top-[50%] flex  -translate-y-1/2 left-[-20px] absolute z-40  ">
             <ChevronLeft className="w-5 h-5 text-slate-100 translate-x-0.5" />
