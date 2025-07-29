@@ -14,3 +14,10 @@ canvas {
   user-select: none;
   touch-action: none;
 }
+
+.clip-path {
+  clip-path: var(--clip-values);
+}
+.noselect {
+  user-select: none;
+}

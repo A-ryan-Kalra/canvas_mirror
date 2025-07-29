@@ -1,13 +1,16 @@
-import { useState, type FormEvent } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 // import { useSocket } from "../services/use-socket-provider";
 
 function Lobby() {
   const navigate = useNavigate();
   const [details, setDetails] = useState({ name: "", room: "" });
+
   // const [isRoomFull, setIsRoomFull] = useState(false);
   // const { socketProvider } = useSocket();
-
+  const imageRef = useRef<HTMLImageElement>(null);
+  const sliderRef = useRef<HTMLDivElement>(null);
   const joinRoom = (e: FormEvent) => {
     e.preventDefault();
     if (!details.name || !details.room) {
@@ -45,30 +48,86 @@ function Lobby() {
   //     navigate("/");
   //   }
 
-  //   useEffect(() => {
-  //     socket.on("room:joined", handleUserJoined);
-  //     socket.on("errorMessage", handleErrorMssage);
+  useEffect(() => {
+    let isDragging = false,
+      offsetWidth = 0,
+      widthCovered = 0;
 
-  //     return () => {
-  //       socket.off("room:joined");
-  //       socket.off("errorMessage", handleErrorMssage);
-  //     };
-  //   }, [handleUserJoined, handleErrorMssage]);
-  //
+    const handleMouseDown = () => {
+      if (imageRef.current) {
+        isDragging = true;
+        offsetWidth = imageRef.current?.offsetWidth;
+      }
+    };
+    const handleMouseMove = (event: MouseEvent) => {
+      if (imageRef.current && isDragging) {
+        const offsetLeftFromMouse = event.clientX;
+        widthCovered = Math.round((offsetLeftFromMouse / offsetWidth) * 100);
+        const insetValues = `inset(0 ${100 - widthCovered}% 0 0)`;
+
+        sliderRef.current!.style.right = `${Math.max(
+          Math.min(100 - widthCovered, 100),
+          0
+        )}%`;
+        imageRef.current.style.setProperty("--clip-values", insetValues);
+      }
+    };
+
+    const handleMouseUp = () => {
+      isDragging = false;
+    };
+
+    window.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      window.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, []);
 
   return (
-    <div className="flex  w-full h-[100dvh] justify-center items-center">
-      <div className="h-fit w-fit bg-gradient-to-tl from-emerald-400 via-pink-600 to-purple-400">
-        <div className="flex gap-y-4 flex-col bg-white items-center p-2 m-1  w-fit h-fit border-[1px] border-zinc-200 ">
-          <h1 className="text-4xl max-sm:text-3xl font-semibold text-teal-500 ">
-            Welcome to the Lobby
-          </h1>
+    <div className="flex  w-full h-[100dvh]  items-center">
+      <div className="w-full h-full relative flex-2  p-2 items-center ">
+        <div
+          ref={sliderRef}
+          draggable={false}
+          className={`absolute h-full w-[2px] top-0 right-[0%] z-20 before:content-[''] before:absolute before:w-12 before:bg-slate-300 hover:shadow-amber-900  shadow-2xl before:z-20 before:rounded-full before:p-1 after:w-10 after:content-[''] after:flex after:items-center after:justify-center after:text-center after:absolute after:bg-purple-400 after:h-10 after:rounded-full after:-translate-y-1/2 after:-translate-x-1/2 after:top-[50%] before:-translate-y-1/2 before:-translate-x-1/2 before:top-[50%] bg-neutral-300  after:z-30 before:h-12 transition ease-in-out  cursor-ew-resize noselect `}
+        >
+          <span className="top-[50%] flex  -translate-y-1/2 left-[-20px] absolute z-40  ">
+            <ChevronLeft className="w-5 h-5 text-slate-100 translate-x-0.5" />
+            <ChevronRight className="w-5 h-5 text-slate-100 -translate-x-0.5" />
+          </span>
+        </div>
+        <img
+          ref={imageRef}
+          src="/img1.png"
+          alt="img1"
+          draggable={false}
+          className="w-full h-full absolute transition ease-in-out top-0 z-10 left-0 aspect-auto object-contain clip-path  touch-none"
+        />
+        <img
+          src="/img2.png"
+          alt="img1"
+          draggable={false}
+          className="w-full h-full absolute top-0 left-0 aspect-auto object-contain clip-path  touch-none"
+        />
+      </div>
+      <div className="flex-1  bg-slate- w-full h-full flex items-center">
+        {/* <div className=" h-fit  w-fit bg-gradient-to-tl from-emerald-400 via-pink-600 to-purple-400"> */}
+        <div className="flex gap-y-4 flex-col bg-white items-center p-2 m-1  w-fit h-fit   border-zinc-200 ">
+          {/* <h1 className="text-4xl max-sm:text-3xl font-semibold text-teal-500 ">
+              Welcome to the Lobby
+            </h1> */}
           <form onSubmit={joinRoom} className="flex flex-col gap-y-2 mt-10 p-3">
             <div className=" flex gap-x-4 items-center justify-between">
-              <label htmlFor="name" className="sm:text-lg text-xs">
+              {/* <label htmlFor="name" className="sm:text-lg text-xs">
                 Enter Name
-              </label>
+              </label> */}
               <input
+                placeholder="Enter Name"
                 type="text"
                 id="name"
                 onChange={(e) =>
@@ -76,15 +135,16 @@ function Lobby() {
                 }
                 value={details.name}
                 autoComplete="username"
-                className="bg-zinc-200 p-1 border-none outline-none focus-visible:ring-0"
+                className="placeholder:text-xs placeholder:text-slate-500 md:text-xs md:w-[180px] md:h-[30px] text-slate-600 rounded-md bg-zinc-200 p-1 border-none outline-none focus-visible:ring-0"
               />
             </div>
             <div className=" flex gap-x-4 items-center justify-between">
-              <label htmlFor="room" className="sm:text-lg text-xs">
+              {/* <label htmlFor="room" className="sm:text-lg text-xs">
                 Enter Room No
-              </label>
+              </label> */}
               <input
                 id="room"
+                placeholder="Enter Room No"
                 onChange={(e) =>
                   setDetails((prev) => ({
                     ...prev,
@@ -93,7 +153,7 @@ function Lobby() {
                 }
                 value={details.room}
                 autoComplete="off"
-                className="bg-zinc-200 p-1 border-none outline-none focus-visible:ring-0"
+                className="placeholder:text-xs placeholder:text-slate-500 md:text-xs md:w-[180px] md:h-[30px] text-slate-600 rounded-md bg-zinc-200 p-1 border-none outline-none focus-visible:ring-0"
               />
             </div>
             {/* {isRoomFull && (
@@ -101,12 +161,13 @@ function Lobby() {
                 Oops, Room is full — check back shortly.
               </h1>
             )} */}
-            <button className="bg-cyan-400 mt-2 w-fit ml-auto hover:scale-110 transition duration-300 px-10 cursor-pointer py-2 rounded-2xl ">
+            <button className="bg-purple-600 mt-2 text-xs text-white ml-auto hover:scale-[102%] transition duration-300 w-full cursor-pointer py-2 rounded-md ">
               Submit
             </button>
           </form>
         </div>
       </div>
+      {/* </div> */}
     </div>
   );
 }
