@@ -25,10 +25,10 @@ function PlayArea() {
   useEffect(() => {
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
     const socket = new WebSocket(
-      // `${protocol}://${
-      //   import.meta.env.VITE_WEBSITE_URL
-      // }/ws/message/${roomId}?name=${name}`
-      `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/message/${roomId}?name=${name}`
+      `${protocol}://${
+        import.meta.env.VITE_WEBSITE_URL
+      }/ws/message/${roomId}?name=${name}`
+      // `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/message/${roomId}?name=${name}`
     );
     // const ws = new WebSocket(
     //   `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/message/${roomId}?name=${name}`
@@ -65,10 +65,10 @@ function PlayArea() {
     //   `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/cursor/${roomId}?name=${name}`
     // );
     const socketCursor = new WebSocket(
-      // `${protocol}://${
-      //   import.meta.env.VITE_WEBSITE_URL
-      // }/ws/cursor/${roomId}?name=${name}`
-      `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/cursor/${roomId}?name=${name}`
+      `${protocol}://${
+        import.meta.env.VITE_WEBSITE_URL
+      }/ws/cursor/${roomId}?name=${name}`
+      // `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/cursor/${roomId}?name=${name}`
     );
 
     socketProvider.set("cursor", socketCursor);
@@ -86,7 +86,7 @@ function PlayArea() {
     socketCursor.onopen = () => {
       console.log("Socket opened.");
     };
-
+    let style: string = "purple";
     socketCursor.onmessage = (event: MessageEvent) => {
       const incomming = JSON.parse(event.data);
 
@@ -119,13 +119,15 @@ function PlayArea() {
         });
       } else {
         setUserData((prev: UserDetailsProps[]) => {
+          if (incomming?.cursorStyle) style = incomming.cursorStyle;
+
           const existingIndex = prev.findIndex(
             (user) => user.name == incomming.name
           );
 
           if (existingIndex !== -1) {
             const updated = [...prev];
-            updated[existingIndex] = incomming;
+            updated[existingIndex] = { ...incomming, cursorStyle: style };
             return updated;
           } else {
             return [...prev, incomming];
@@ -176,10 +178,10 @@ function PlayArea() {
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
 
     const removePlayerSocket = new WebSocket(
-      // `${protocol}://${
-      //   import.meta.env.VITE_WEBSITE_URL
-      // }/ws/remove/${roomId}?name=${name}`
-      `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/remove/${roomId}?name=${name}`
+      `${protocol}://${
+        import.meta.env.VITE_WEBSITE_URL
+      }/ws/remove/${roomId}?name=${name}`
+      // `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/remove/${roomId}?name=${name}`
     );
 
     socketProvider.set("remove", removePlayerSocket);

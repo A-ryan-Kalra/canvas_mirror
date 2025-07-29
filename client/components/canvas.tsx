@@ -303,8 +303,8 @@ function Canvas() {
       if (ctxRemoteUser) {
         ctxRemoteUser.strokeStyle = parsed?.strokeStyle;
         ctxRemoteUser.lineWidth = parsed?.lineWidth;
-
         ctxRemoteUser.fillStyle = parsed?.strokeStyle;
+        ctxRemoteUser.font = parsed?.textStyle;
       }
       if (parsed.status === "erase") {
         for (let con in canvasMap.current) {
@@ -553,6 +553,14 @@ function Canvas() {
                       bgColor: `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${rgba.a})`,
                       sticketTextAtom: false,
                     }));
+                    const data = {
+                      type: "cursor",
+                      name,
+                      width: window.innerWidth,
+                      height: window.innerHeight,
+                      cursorStyle: `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${rgba.a})`,
+                    };
+                    socketProvider.get("cursor")!.send(JSON.stringify(data));
                   }}
                 />
               )}
@@ -708,7 +716,7 @@ function Canvas() {
                         },
                         ctx?.strokeStyle as unknown as string,
                         ctx?.lineWidth,
-                        ctx?.fillStyle as unknown as string,
+                        ctx?.font as unknown as string,
                         e.target.value
                       );
                     }

@@ -13,11 +13,12 @@ function StickerMovement({ position }: StickerMovementProps) {
       spellCheck={false}
       style={{
         minWidth: "50px",
-        maxWidth: "200px",
+        maxWidth: "150px",
         // maxHeight: "100px",
         // resize: "both",
-        // whiteSpace: "wrap",
+        whiteSpace: "wrap",
         wordBreak: "break-word",
+        overflowWrap: "break-word",
         border: "none",
         borderRadius: "10px",
         outline: "none",

@@ -75,7 +75,7 @@ function CursorMovement({ position }: CursorMovementProps) {
         position: "fixed",
         borderRadius: "23px",
         pointerEvents: "none",
-        zIndex: 99999,
+        zIndex: 999999,
         cursor: "none",
         // transition: "transform 0.04s ease-in-out",
         transform: `translate(${
@@ -87,13 +87,17 @@ function CursorMovement({ position }: CursorMovementProps) {
         style={{
           width: "25px",
           height: "25px",
-          color: "purple",
+          color: position?.cursorStyle,
         }}
         className=" relative top-0 left-0 mx-auto"
       >
         {position.name}
-        <div className="absolute -top-11 text-amber-400 min-w-[150px]">
-          {messages.name !== name && messages.message}
+        <div
+          className={`absolute -top-11 min-w-[150px] bg-lime-300/90 ${
+            messages.message && "p-1"
+          } text-black rounded-[5px] text-sm`}
+        >
+          {messages.name !== name && messages.message && "Typing..."}
         </div>
       </div>
       <div
@@ -105,7 +109,7 @@ function CursorMovement({ position }: CursorMovementProps) {
           backgroundRepeat: "no-repeat",
           backgroundSize: "contain",
           backgroundPosition: "center",
-          backgroundColor: "purple",
+          backgroundColor: position.cursorStyle,
           width: "25px",
           height: "25px",
         }}

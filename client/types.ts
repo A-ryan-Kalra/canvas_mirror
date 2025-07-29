@@ -5,6 +5,7 @@ export interface CursorMovementProps {
     width: number;
     height: number;
     name: string;
+    cursorStyle?: string;
   };
 }
 
@@ -16,6 +17,7 @@ export interface UserDetailsProps {
   name: string;
   type: string;
   message?: string;
+  cursorStyle?: string;
 }
 export interface StickerDetailProps {
   x: number;
@@ -26,6 +28,7 @@ export interface StickerDetailProps {
   type: string;
   stickerNo: string;
   message?: string;
+  cursorStyle?: string;
 }
 
 export interface StickerMovementProps {
@@ -38,5 +41,6 @@ export interface StickerMovementProps {
     type: string;
     stickerNo: string;
     message?: string;
+    cursorStyle?: string;
   };
 }
