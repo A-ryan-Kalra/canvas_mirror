@@ -86,7 +86,7 @@ function PlayArea() {
     socketCursor.onopen = () => {
       console.log("Socket opened.");
     };
-    let style: string = "purple";
+    let style: { [key: string]: string } = {};
     socketCursor.onmessage = (event: MessageEvent) => {
       const incomming = JSON.parse(event.data);
 
@@ -119,15 +119,19 @@ function PlayArea() {
         });
       } else {
         setUserData((prev: UserDetailsProps[]) => {
-          if (incomming?.cursorStyle) style = incomming.cursorStyle;
-
+          if (incomming?.cursorStyle) {
+            style[incomming?.name] = incomming.cursorStyle;
+          }
           const existingIndex = prev.findIndex(
             (user) => user.name == incomming.name
           );
 
           if (existingIndex !== -1) {
             const updated = [...prev];
-            updated[existingIndex] = { ...incomming, cursorStyle: style };
+            updated[existingIndex] = {
+              ...incomming,
+              cursorStyle: style[incomming?.name] ?? "purple",
+            };
             return updated;
           } else {
             return [...prev, incomming];
