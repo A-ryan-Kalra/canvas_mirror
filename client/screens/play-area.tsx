@@ -5,6 +5,7 @@ import { useSocket } from "../services/use-socket-provider";
 import { useLocation, useParams } from "react-router-dom";
 import StickerMovement from "../components/sticker-movement";
 import Canvas from "../components/canvas";
+import toast, { Toaster } from "react-hot-toast";
 
 import type { StickerDetailProps, UserDetailsProps } from "../types";
 
@@ -41,23 +42,43 @@ function PlayArea() {
       console.log(`Successfully established the connection.`);
 
       const data = {
-        type: "message",
+        type: "greeting",
         name,
         message: `${name} entered the room.`,
       };
       socket?.send(JSON.stringify(data));
     };
+    socket.addEventListener("message", (event: MessageEvent) => {
+      const parsed = JSON.parse(event.data);
+
+      if (parsed?.type === "greeting") {
+        console.log(`${parsed.name} entered the chat room`);
+        toast(`${parsed.name} entered the canvas room`, {
+          duration: 3000,
+          position: "top-right",
+
+          style: {
+            color: "#f0f6f6",
+            background: `linear-gradient(#e66465, #9198e5)`,
+          },
+
+          className: "",
+
+          icon: "🦄",
+        });
+      }
+    });
     if (socket) {
       socket!.onclose = () => {
         console.log(`${name} left the chat room.`);
       };
-      socket!.onmessage = (event: MessageEvent) => {
-        const parsed = JSON.parse(event.data);
+      // socket!.onmessage = (event: MessageEvent) => {
+      //   const parsed = JSON.parse(event.data);
 
-        if (parsed?.type === "message") {
-          console.log(`${parsed.name} entered the chat room`);
-        }
-      };
+      //   if (parsed?.type === "message") {
+      //     console.log(`${parsed.name} entered the chat room`);
+      //   }
+      // };
     }
 
     // let lastSent = 0;
@@ -243,6 +264,7 @@ function PlayArea() {
 
   return (
     <div className="h-full w-full ">
+      <Toaster />
       {userData.length > 0 &&
         userData.map((data: UserDetailsProps, index) => (
           <CursorMovement position={{ ...data }} key={index} />
