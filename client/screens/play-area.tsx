@@ -226,10 +226,25 @@ function PlayArea() {
     removePlayerSocket.onmessage = (event: MessageEvent) => {
       const parsed = JSON.parse(event.data);
 
-      setStickerMovement((prev) =>
-        prev.filter((user) => user.name !== parsed.name)
-      );
-      setUserData((prev) => prev.filter((user) => user.name !== parsed.name));
+      if (parsed?.name) {
+        toast(`${parsed.name} left the canvas room`, {
+          duration: 3000,
+          position: "top-right",
+
+          style: {
+            color: "#f0f6f6",
+            background: `linear-gradient(#e66465, #9198e5)`,
+          },
+
+          className: "",
+
+          icon: "🦄",
+        });
+        setStickerMovement((prev) =>
+          prev.filter((user) => user.name !== parsed.name)
+        );
+        setUserData((prev) => prev.filter((user) => user.name !== parsed.name));
+      }
     };
 
     function handleRemoveSocket(e: BeforeUnloadEvent) {

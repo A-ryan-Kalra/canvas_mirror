@@ -50,7 +50,7 @@ def healthz():
 
 
 @app.websocket("/ws/message/{room}")
-async def track_cursor(websocket: WebSocket, room: int):
+async def track_messages(websocket: WebSocket, room: int):
     # await websocket.accept()
 
     name = websocket.query_params.get("name")
@@ -63,7 +63,7 @@ async def track_cursor(websocket: WebSocket, room: int):
             await user.broadcast(data, room, websocket, name)
 
     except Exception as error:
-        print(f"\nSomething went wrong {websocket} \n", error)
+        print(f"\nSomething went wrong at message sockets: \n", error)
         user.disconnect(websocket, room, name)
 
 
@@ -80,13 +80,13 @@ async def track_cursor(websocket: WebSocket, room: int):
             await cursorMovement.broadcast(data, room, name, websocket)
 
     except Exception as error:
-        print(f"\nSomething went wrong {websocket} \n", error)
+        print(f"\nSomething went wrong at cursor sockets: \n", error)
 
         cursorMovement.disconnect(websocket, room, name)
 
 
 @app.websocket("/ws/remove/{room}")
-async def track_cursor(websocket: WebSocket, room: int):
+async def track_remove_sockets(websocket: WebSocket, room: int):
     # await websocket.accept()
 
     name = websocket.query_params.get("name")
@@ -94,13 +94,10 @@ async def track_cursor(websocket: WebSocket, room: int):
     try:
         while True:
             data = await websocket.receive_text()
-            print("Remove Socket\n ", data)
-
             await removeSocket.broadcast(data, room, name, websocket)
 
     except Exception as error:
-        print(f"\nSomething went wrong {websocket} \n", error)
-        print("Remove Socket Error\n ", error)
+        print(f"\nSomething went wrong at track_remove_sockets: \n", error)
 
         removeSocket.disconnect(websocket, room, name)
         await removeSocket.broadcast(
