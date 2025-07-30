@@ -52,7 +52,6 @@ function PlayArea() {
       const parsed = JSON.parse(event.data);
 
       if (parsed?.type === "greeting") {
-        console.log(`${parsed.name} entered the chat room`);
         toast(`${parsed.name} entered the canvas room`, {
           duration: 3000,
           position: "top-right",

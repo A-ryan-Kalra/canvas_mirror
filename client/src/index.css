@@ -19,5 +19,5 @@ canvas {
   clip-path: var(--clip-values);
 }
 .noselect {
-  user-select: none;
+  user-select: none !important;
 }
