@@ -2,7 +2,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 // import { useSocket } from "../services/use-socket-provider";
-
+import Footer from "../components/footer";
 function Lobby() {
   const navigate = useNavigate();
   const [details, setDetails] = useState({ name: "", room: "" });
@@ -121,98 +121,86 @@ function Lobby() {
   }, []);
 
   return (
-    <div className="flex  w-full h-[100dvh] overflow-hidden max-md:flex-col items-center">
-      <div className="w-full max-md:hidden h-full relative flex-2  p-2 items-center ">
-        <div
-          ref={sliderRef}
-          draggable={false}
-          className={` absolute h-full w-[2px] top-0 right-[0%] z-20 before:content-[''] before:absolute before:w-12 before:bg-pink-300 before:z-20 before:rounded-full before:p-1 after:w-10 after:content-[''] after:flex after:items-center after:justify-center after:text-center after:absolute after:bg-purple-400 after:h-10 after:rounded-full after:-translate-y-1/2 after:-translate-x-1/2 after:top-[50%] before:-translate-y-1/2 before:-translate-x-1/2 before:top-[50%] bg-teal-300 after:z-30 before:h-12 transition ease-in-out  cursor-ew-resize noselect`}
-        >
-          <span className="top-[50%] flex  -translate-y-1/2 left-[-20px] absolute z-40  ">
-            <ChevronLeft className="w-5 h-5 text-slate-100 translate-x-0.5" />
-            <ChevronRight className="w-5 h-5 text-slate-100 -translate-x-0.5" />
-          </span>
-        </div>
-        <img
-          ref={imageRef}
-          src="/img1.png"
-          alt="img1"
-          draggable={false}
-          className="w-full h-full absolute noselect transition ease-in-out top-0 z-10 left-0 aspect-auto object-contain clip-path  touch-none"
-        />
-        <img
-          src="/img2.png"
-          alt="img1"
-          draggable={false}
-          className="w-full h-full absolute noselect top-0 left-0 aspect-auto object-contain clip-path  touch-none"
-        />
-      </div>
-      <div className="flex-1 overflow-hidden  w-full h-full flex items-center justify-center">
-        {/* <div className=" h-fit  w-fit bg-gradient-to-tl from-emerald-400 via-pink-600 to-purple-400"> */}
-        <div className="flex gap-y-4 flex-col bg-white  items-center p-2 m-1  w-fit h-fit   border-zinc-200 ">
-          {/* <h1 className="text-4xl max-sm:text-3xl font-semibold text-teal-500 ">
-              Welcome to the Lobby
-              </h1> */}
-          <form
-            onSubmit={joinRoom}
-            className="flex flex-col justify-center items-center  p-3"
+    <div className="flex  w-full h-[100dvh] flex-col items-center">
+      <div className="flex  w-full h-full overflow-hidden max-md:flex-col items-center">
+        <div className="w-full max-md:hidden h-full relative flex-2  p-2 items-center ">
+          <div
+            ref={sliderRef}
+            draggable={false}
+            className={` absolute h-full w-[2px] top-0 right-[0%] z-20 before:content-[''] before:absolute before:w-12 before:bg-pink-300 before:z-20 before:rounded-full before:p-1 after:w-10 after:content-[''] after:flex after:items-center after:justify-center after:text-center after:absolute after:bg-purple-400 after:h-10 after:rounded-full after:-translate-y-1/2 after:-translate-x-1/2 after:top-[50%] before:-translate-y-1/2 before:-translate-x-1/2 before:top-[50%] bg-teal-300 after:z-30 before:h-12 transition ease-in-out  cursor-ew-resize noselect`}
           >
-            <div className="w-[200px] z-10 border-[1px] h-[200px] flex items-center justify-center">
-              <img
-                src="/canvas_new.png"
-                alt="canvas_new"
-                draggable={false}
-                className="w-fit h-full  noselect scale-200  aspect-square object-contain clip-path"
-              />
-            </div>
-            <div className="flex z-20 flex-col justify-center items-center  gap-y-2 p-3">
-              <div className=" flex gap-x-4 items-center justify-between">
-                {/* <label htmlFor="name" className="sm:text-lg text-xs">
-                Enter Name
-                </label> */}
-                <input
-                  placeholder="Enter Name"
-                  type="text"
-                  id="name"
-                  onChange={(e) =>
-                    setDetails((prev) => ({ ...prev, name: e.target.value }))
-                  }
-                  value={details.name}
-                  autoComplete="username"
-                  className="placeholder:text-xs placeholder:text-slate-500 md:text-xs md:w-[180px] md:h-[30px] text-slate-600 rounded-md bg-zinc-200 p-1 border-none outline-none focus-visible:ring-0"
+            <span className="top-[50%] flex  -translate-y-1/2 left-[-20px] absolute z-40  ">
+              <ChevronLeft className="w-5 h-5 text-slate-100 translate-x-0.5" />
+              <ChevronRight className="w-5 h-5 text-slate-100 -translate-x-0.5" />
+            </span>
+          </div>
+          <img
+            ref={imageRef}
+            src="/img1.png"
+            alt="img1"
+            draggable={false}
+            className="w-full h-full absolute noselect transition ease-in-out top-0 z-10 left-0 aspect-auto object-contain clip-path  touch-none"
+          />
+          <img
+            src="/img2.png"
+            alt="img1"
+            draggable={false}
+            className="w-full h-full absolute noselect top-0 left-0 aspect-auto object-contain clip-path  touch-none"
+          />
+        </div>
+        <div className="flex-1 overflow-hidden  w-full h-full flex items-center justify-center">
+          <div className="flex gap-y-4 flex-col bg-white  items-center p-2 m-1  w-fit h-fit   border-zinc-200 ">
+            <form
+              onSubmit={joinRoom}
+              className="flex flex-col justify-center items-center  p-3"
+            >
+              <div className="w-[200px] z-10 border-[1px] h-[200px] flex items-center justify-center">
+                <img
+                  src="/canvas_new.png"
+                  alt="canvas_new"
+                  draggable={false}
+                  className="w-fit h-full  noselect scale-200  aspect-square object-contain clip-path"
                 />
               </div>
-              <div className=" flex gap-x-4 items-center justify-between">
-                {/* <label htmlFor="room" className="sm:text-lg text-xs">
-                Enter Room No
-              </label> */}
-                <input
-                  id="room"
-                  placeholder="Enter Room No"
-                  onChange={(e) =>
-                    setDetails((prev) => ({
-                      ...prev,
-                      room: e.target.value,
-                    }))
-                  }
-                  value={details.room}
-                  autoComplete="off"
-                  className="placeholder:text-xs placeholder:text-slate-500 md:text-xs md:w-[180px] md:h-[30px] text-slate-600 rounded-md bg-zinc-200 p-1 border-none outline-none focus-visible:ring-0"
-                />
+              <div className="flex z-20 flex-col justify-center items-center  gap-y-2 p-3">
+                <div className=" flex gap-x-4 items-center justify-between">
+                  <input
+                    placeholder="Enter Name"
+                    type="text"
+                    id="name"
+                    onChange={(e) =>
+                      setDetails((prev) => ({ ...prev, name: e.target.value }))
+                    }
+                    value={details.name}
+                    autoComplete="username"
+                    className="placeholder:text-xs placeholder:text-slate-500 md:text-xs md:w-[180px] md:h-[30px] text-slate-600 rounded-md bg-zinc-200 p-1 border-none outline-none focus-visible:ring-0"
+                  />
+                </div>
+                <div className=" flex gap-x-4 items-center justify-between">
+                  <input
+                    id="room"
+                    placeholder="Enter Room No"
+                    onChange={(e) =>
+                      setDetails((prev) => ({
+                        ...prev,
+                        room: e.target.value,
+                      }))
+                    }
+                    value={details.room}
+                    autoComplete="off"
+                    className="placeholder:text-xs placeholder:text-slate-500 md:text-xs md:w-[180px] md:h-[30px] text-slate-600 rounded-md bg-zinc-200 p-1 border-none outline-none focus-visible:ring-0"
+                  />
+                </div>
+
+                <button className="bg-purple-600 mt-2 text-xs text-white ml-auto hover:scale-[102%] transition duration-300 w-full cursor-pointer py-2 rounded-md ">
+                  Submit
+                </button>
               </div>
-              {/* {isRoomFull && (
-              <h1 className="text-red-500 ml-auto">
-                Oops, Room is full — check back shortly.
-              </h1>
-            )} */}
-              <button className="bg-purple-600 mt-2 text-xs text-white ml-auto hover:scale-[102%] transition duration-300 w-full cursor-pointer py-2 rounded-md ">
-                Submit
-              </button>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
       </div>
-      {/* </div> */}
+      <Footer />
     </div>
   );
 }
