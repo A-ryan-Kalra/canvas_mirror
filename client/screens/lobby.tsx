@@ -121,7 +121,7 @@ function Lobby() {
   }, []);
 
   return (
-    <div className="flex  w-full h-[100dvh] flex-col items-center">
+    <section className="flex  w-full h-[100dvh] flex-col items-center">
       <div className="flex  w-full h-full overflow-hidden max-md:flex-col items-center">
         <div className="w-full max-md:hidden h-full relative flex-2  p-2 items-center ">
           <div
@@ -201,7 +201,7 @@ function Lobby() {
         </div>
       </div>
       <Footer />
-    </div>
+    </section>
   );
 }
 

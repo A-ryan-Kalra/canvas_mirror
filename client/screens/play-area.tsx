@@ -277,7 +277,7 @@ function PlayArea() {
   // let date = new Date().getMilliseconds();
 
   return (
-    <div className="h-full w-full ">
+    <section className="h-full w-full ">
       <Toaster />
       {userData.length > 0 &&
         userData.map((data: UserDetailsProps, index) => (
@@ -291,7 +291,7 @@ function PlayArea() {
         <UserCursorMovement divRefs={divRefs.current ?? []} name={name ?? ""} />
       )}
       <Canvas />
-    </div>
+    </section>
   );
 }
 

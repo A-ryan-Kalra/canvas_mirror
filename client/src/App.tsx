@@ -5,7 +5,7 @@ import PlayArea from "../screens/play-area";
 
 function App() {
   return (
-    <div className="w-full h-dvh">
+    <main className="w-full h-dvh">
       {/* <CursorMovement date={client} /> */}
 
       <Routes>
@@ -19,7 +19,7 @@ function App() {
           }
         />
       </Routes>
-    </div>
+    </main>
   );
 }
 
