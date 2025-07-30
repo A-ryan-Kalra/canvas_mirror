@@ -23,25 +23,25 @@
 
 ## 🚀 Features
 
-* ✏️ Collaborative Drawing - Real time multiuser sketching powered by WebSockets.
-* 🖼️ Canvas 2D Integration – Smooth and responsive drawing experience using the Canvas API.
-* 📡 Live Sync - All strokes and updates are instantly mirrored to other connected users.
-* 🗒️ Sticky Notes – Leave notes or reminders directly on the canvas.
+- ✏️ Collaborative Drawing - Real time multiuser sketching powered by WebSockets.
+- 🖼️ Canvas 2D Integration – Smooth and responsive drawing experience using the Canvas API.
+- 📡 Live Sync - All strokes and updates are instantly mirrored to other connected users.
+- 🗒️ Sticky Notes – Leave notes or reminders directly on the canvas.
 
 <br/>
 
 ## 🛠️ Tech Stack
 
-
-| Frontend             | Backend         | Real-Time | Drawing      |
-| -                    | -               | -         | -            |
-| React.js (Typescript) | FastApi (Python) |Websocket  |Canvas 2D API |
+| Frontend              | Backend          | Real-Time | Drawing       |
+| --------------------- | ---------------- | --------- | ------------- |
+| React.js (Typescript) | FastApi (Python) | Websocket | Canvas 2D API |
 
 <br/>
 
 ## ⚙️ Installation
 
 #### 1. Clone the Repository
+
 ```
 git clone https://github.com/A-ryan-Kalra/canvas_mirror
 
@@ -53,18 +53,20 @@ cd canvas-mirror
 
 ```
 cd server
-python3 -m venv venv
-source venv/bin/activate
+python3 -m venv venv-canvas
+source venv-canvas/bin/activate
 pip install -r requirements.txt
-uvicorn main:app --reload
+uvicorn canvas_backend.main:app --reload
 ```
 
 #### 3. 🌅 Frontend Setup (React)
+
 ```
 cd ../client
 npm install
 npm run start
 ```
+
 Open <a href='http://localhost:5173'>http://localhost:5173</a> in your browser to see the result.
 <br>
 
@@ -88,6 +90,3 @@ Powered by ☕️ & 🎧 <br>
 Aryan Kalra
 
 </div>
-
-
-
