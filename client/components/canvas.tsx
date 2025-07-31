@@ -132,8 +132,8 @@ function Canvas() {
       if (event?.touches?.length > 0) {
         let touch = event?.touches[0];
         (offSetX = touch.clientX), (offSetY = touch.clientY);
-        ctx?.beginPath();
-        ctx?.moveTo(offSetX, offSetY);
+        // ctx?.beginPath();
+        // ctx?.moveTo(offSetX, offSetY);
       }
       const data = {
         name,
@@ -582,10 +582,10 @@ function Canvas() {
               toolsRef.current.canvasText = false;
               toolsRef.current.pickColor = false;
               toolsRef.current.showText = false;
-              setTools(() => ({
+              setTools((prev) => ({
                 penSize: false,
                 pickColor: false,
-                eraser: true,
+                eraser: !prev.eraser,
                 canvasText: false,
               }));
             }}
