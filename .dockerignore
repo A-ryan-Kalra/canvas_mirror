@@ -1,0 +1,11 @@
+.dockerignore
+
+node_modules
+dist
+__pycache__
+.env
+.env.*
+Dockerfile
+docker-compose.yml
+*.log
+

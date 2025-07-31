@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  canvas_mirror:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_WEBSITE_URL: "localhost:8000"
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - STATIC_PATH=app/client
+    restart: unless-stopped

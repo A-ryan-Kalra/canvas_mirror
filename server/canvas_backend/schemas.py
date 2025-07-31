@@ -28,12 +28,11 @@ class User:
         await websocket.send_text(message)
 
     async def broadcast(self, message: str, room: int, websocket: WebSocket, name: str):
-        print("sessions=", self.active_connections)
 
         if room in self.active_connections:
             for user in self.active_connections[room]:
                 if user["name"] != name and user["socket"] != websocket:
-                    print("\n User: ", user)
+
                     await user["socket"].send_text(message)
 
         if room in self.active_connections and not self.active_connections[room]:
