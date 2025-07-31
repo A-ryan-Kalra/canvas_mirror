@@ -735,7 +735,7 @@ function Canvas() {
               toolsRef.current.showText = false;
               setShowStickerDetails((prev) => ({
                 ...prev,
-                sticketTextAtom: true,
+                sticketTextAtom: !prev.sticketTextAtom,
               }));
               setTools(() => ({
                 penSize: false,
