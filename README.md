@@ -39,36 +39,66 @@
 <br/>
 
 ## ⚙️ Installation
+  - ### Manual Installation:
 
-#### 1. Clone the Repository
-
-```
-git clone https://github.com/A-ryan-Kalra/canvas_mirror
-
-# Enter the working directory
-cd canvas-mirror
-```
-
-#### 2. 🚧 Backend Setup (FastAPI)
-
-```
-cd server
-python3 -m venv venv-canvas
-source venv-canvas/bin/activate
-pip install -r requirements.txt
-uvicorn canvas_backend.main:app --reload
-```
-
-#### 3. 🌅 Frontend Setup (React)
-
-```
-cd ../client
-npm install
-npm run start
-```
-
-Open <a href='http://localhost:5173'>http://localhost:5173</a> in your browser to see the result.
+    #### 1. Clone the Repository
+    
+    ```
+    git clone https://github.com/A-ryan-Kalra/canvas_mirror
+    
+    # Enter the working directory
+    cd canvas-mirror
+    ```
+    
+    #### 2. 🚧 Backend Setup (FastAPI)
+    
+    ```
+    cd server
+    python3 -m venv venv-canvas
+    source venv-canvas/bin/activate
+    pip install -r requirements.txt
+    uvicorn canvas_backend.main:app --reload
+    ```
+    
+    #### 3. 🌅 Frontend Setup (React)
+    
+    ```
+    cd ../client
+    npm install
+    npm run start
+    ```
+    
+    Open <a href='http://localhost:5173'>http://localhost:5173</a> in your browser to see the result.
 <br>
+
+- ### 🐳 **DOCKER** Installation
+  * #### Run Instantly with Docker (Prebuilt Image)
+    ```
+    # Pull the prebuilt image
+    docker pull aryankalra363/canvas_mirror
+    
+    # Run the app on port 8000
+    docker run -p 8000:8000 -e STATIC_PATH=app/client aryankalra363/canvas_mirror
+    ```
+    🔗 Open your browser and visit: <a href='http://localhost:8000'>http://localhost:8000</a>
+
+   * #### Or, run locally with Docker Compose
+
+> [!IMPORTANT]
+> Make sure to include .env file for both server and client directory before the build.
+
+  If you would like to clone the code and run locally:
+  
+  #### 1. Clone the repository
+  ```
+  https://github.com/A-ryan-Kalra/canvas_mirror.git
+  cd canvas_mirror
+  ```
+  #### 2. Run with Docker Compose
+  ```
+  docker compose up --build
+  ```
+  🔗 Open your browser and visit: <a href='http://localhost:8000'>http://localhost:8000</a>
 
 ---
 
