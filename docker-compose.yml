@@ -2,6 +2,7 @@ version: "3.9"
 
 services:
   canvas_mirror:
+    image: canvas_mirror:latest
     build:
       context: .
       dockerfile: Dockerfile

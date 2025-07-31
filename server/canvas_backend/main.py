@@ -27,6 +27,8 @@ app.add_middleware(
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 DIST_DIR = BASE_DIR / os.getenv("STATIC_PATH") / "dist"
 
+print("DIST_DIR =", DIST_DIR)
+print("DIST_DIR exists?", DIST_DIR.exists())
 
 app.mount(
     "/static",
