@@ -15,9 +15,14 @@
 - [🚀 Features](#-features)
 - [🛠️ Tech Stack](#%EF%B8%8F-tech-stack)
 - [⚙️🔧Installation](#%EF%B8%8F-installation)
-  - [Clone the Repository](#1-clone-the-repository)
-  - [🚧 Backend Setup (FastAPI)](#2--backend-setup-fastapi)
-  - [🌅 Frontend Setup (React)](#3--frontend-setup-react)
+  - [📋 Manual Installation](#-manual-installation)
+    - [Clone the Repository](#1-clone-the-repository)
+    - [🚧 Backend Setup (FastAPI)](#2--backend-setup-fastapi)
+    - [🌅 Frontend Setup (React)](#3--frontend-setup-react)
+  - [🐳 DOCKER Installation](#-docker-installation)
+    - [Run Instantly with Docker (Prebuilt Image)](#run-instantly-with-docker-prebuilt-image)
+    - [Or, run locally with Docker Compose](#or-run-locally-with-docker-compose)
+
 
 <br/>
 
@@ -39,7 +44,7 @@
 <br/>
 
 ## ⚙️ Installation
-  - ### Manual Installation:
+  - ### 📋 Manual Installation:
 
     #### 1. Clone the Repository
     
