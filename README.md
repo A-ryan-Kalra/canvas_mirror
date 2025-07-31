@@ -32,9 +32,9 @@
 
 ## 🛠️ Tech Stack
 
-| Frontend              | Backend          | Real-Time | Drawing       |
-| --------------------- | ---------------- | --------- | ------------- |
-| React.js (Typescript) | FastApi (Python) | Websocket | Canvas 2D API |
+| Frontend              | Backend          | Real-Time | Drawing       | Containerization |
+| --------------------- | ---------------- | --------- | ------------- | :--------------: |
+| React.js (Typescript) | FastApi (Python) | Websocket | Canvas 2D API |      Docker      |
 
 <br/>
 
@@ -82,23 +82,25 @@
     ```
     🔗 Open your browser and visit: <a href='http://localhost:8000'>http://localhost:8000</a>
 
-   * #### Or, run locally with Docker Compose
-
-> [!IMPORTANT]
+---
+> [!IMPORTANT] 
 > Make sure to include .env file for both server and client directory before the build.
 
-  If you would like to clone the code and run locally:
+  * #### Or, run locally with Docker Compose
+    
+
+    If you would like to clone the code and run locally:
   
-  #### 1. Clone the repository
-  ```
-  https://github.com/A-ryan-Kalra/canvas_mirror.git
-  cd canvas_mirror
-  ```
-  #### 2. Run with Docker Compose
-  ```
-  docker compose up --build
-  ```
-  🔗 Open your browser and visit: <a href='http://localhost:8000'>http://localhost:8000</a>
+    #### 1. Clone the repository
+    ```
+    https://github.com/A-ryan-Kalra/canvas_mirror.git
+    cd canvas_mirror
+    ```
+    #### 2. Run with Docker Compose
+    ```
+    docker compose up --build
+    ```
+    🔗 Open your browser and visit: <a href='http://localhost:8000'>http://localhost:8000</a>
 
 ---
 
