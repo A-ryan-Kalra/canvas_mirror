@@ -15,9 +15,11 @@ import { isDraggingAtom } from "./user-cursor-movement";
 export const stickerDetails = atom<{
   sticketTextAtom: boolean;
   bgColor: string;
+  fontSize: number;
 }>({
   sticketTextAtom: false,
   bgColor: "",
+  fontSize: 16,
 });
 function Canvas() {
   const [isDragAtom] = useAtom(isDraggingAtom);
@@ -549,7 +551,8 @@ function Canvas() {
                     a: number;
                   }) => {
                     ctx!.strokeStyle = `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${rgba.a})`;
-                    setShowStickerDetails(() => ({
+                    setShowStickerDetails((prev) => ({
+                      ...prev,
                       bgColor: `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${rgba.a})`,
                       sticketTextAtom: false,
                     }));
@@ -642,7 +645,19 @@ function Canvas() {
                   max={80}
                   defaultValue={5}
                   onChange={(e) => {
-                    setCanvasConf({ textSize: e.target.value });
+                    setCanvasConf({
+                      textSize: (1.2 * Number(e.target.value) > 10
+                        ? 1.2 * Number(e.target.value)
+                        : 10
+                      ).toString(),
+                    });
+                    setShowStickerDetails((prev) => ({
+                      ...prev,
+                      fontSize:
+                        1.2 * Number(e.target.value) > 10
+                          ? 1.2 * Number(e.target.value)
+                          : 10,
+                    }));
                   }}
                 />
               </div>

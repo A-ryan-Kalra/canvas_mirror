@@ -127,6 +127,7 @@ function UserCursorMovement({
     divEl.style.padding = "0.55rem";
     divEl.style.zIndex = "99999";
     divEl.spellcheck = false;
+    divEl.style.font = `${showStickerDetails.fontSize}px Arial`;
 
     divEl.style.background = "rgba(37, 235, 221, 0.6)";
     divEl.style.cursor = "grab";
