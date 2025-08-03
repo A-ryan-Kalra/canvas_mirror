@@ -2,7 +2,7 @@ import { Github } from "lucide-react";
 
 function Footer() {
   return (
-    <footer className={` w-full`}>
+    <footer className={`p-1 w-full`}>
       <div className="flex relative justify-around items-center  text-black duration-300 py-2 border-t-[2px] border-slate-200">
         <span className="md:text-sm  text-[12px] flex items-center justify-center gap-x-1">
           Pixels speak louder than words &copy; {new Date().getFullYear()}{" "}

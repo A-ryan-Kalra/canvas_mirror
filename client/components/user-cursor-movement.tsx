@@ -332,11 +332,19 @@ function UserCursorMovement({
         divEl.blur();
         // divEl.appendChild(document.createElement("br"));
       }
-      if (window.innerWidth < 1024) {
-        if (e.key === "Backspace" && divEl.textContent?.trim() === "") {
-          divEl.remove();
-        }
+      // if (window.innerWidth < 1024) {
+      if (e.key === "Backspace" && divEl.textContent?.trim() === "") {
+        divEl.remove();
+        const data = {
+          name,
+          type: "delete",
+          message: divEl.textContent as string,
+          stickerNo: id,
+        };
+
+        handleStickerMovement(data);
       }
+      // }
     });
   };
 
