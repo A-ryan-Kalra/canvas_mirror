@@ -328,9 +328,10 @@ function UserCursorMovement({
         };
 
         handleStickerMovement(data);
+      } else if (e.key === "Enter" && e.shiftKey) {
+        divEl.appendChild(document.createElement("br"));
       } else if (e.key === "Escape" || e.key === "Enter") {
         divEl.blur();
-        // divEl.appendChild(document.createElement("br"));
       }
       // if (window.innerWidth < 1024) {
       if (e.key === "Backspace" && divEl.textContent?.trim() === "") {
