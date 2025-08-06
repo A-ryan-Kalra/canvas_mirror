@@ -24,6 +24,7 @@
 
 # Contents
 
+- [🎨 Connect And Doodle With Your Buddies](#-connect-and-doodle-with-your-buddies)
 - [🚀 Features](#-features)
 - [🛠️ Tech Stack](#%EF%B8%8F-tech-stack)
 - [⚙️🔧Installation](#%EF%B8%8F-installation)
@@ -34,6 +35,14 @@
   - [🐳 DOCKER Installation](#-docker-installation)
     - [Run Instantly with Docker (Prebuilt Image)](#run-instantly-with-docker-prebuilt-image)
     - [Or, run locally with Docker Compose](#or-run-locally-with-docker-compose)
+
+
+<br/>
+
+## 🎨 Connect And Doodle With Your Buddies:
+- Username must be unique because sharing the same name as someone else will cause your movements to overlap!
+- Use the same room name, make sure everyone joins the exact same room to collaborate.
+- Once you're in, let the creativity flow together, in real-time! 🎨🦄
 
 
 <br/>
