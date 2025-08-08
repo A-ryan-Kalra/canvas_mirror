@@ -38,6 +38,7 @@ function Canvas() {
   const [canvasConf, setCanvasConf] = useState<{ textSize: string }>({
     textSize: "",
   });
+  const isEraserRunning = useRef<boolean>(false);
   const isDrawing = useRef<boolean>(false);
   const { socketProvider } = useSocket();
   const toolsRef = useRef<{
@@ -120,6 +121,11 @@ function Canvas() {
     ctx.font = "20px Arial";
 
     const getMousePosition = (event: MouseEvent) => {
+      if (isEraserRunning.current) {
+        stopDrawing();
+
+        return;
+      }
       const react = canvas.getBoundingClientRect();
       const offsetX = event.clientX - react.left;
       const offsetY = event.clientY - react.top;
@@ -128,6 +134,11 @@ function Canvas() {
     };
 
     function touchStart(event: TouchEvent) {
+      if (isEraserRunning.current) {
+        stopDrawing();
+
+        return;
+      }
       let offSetX = 0;
       let offSetY = 0;
       isDrawing.current = true;
@@ -150,6 +161,10 @@ function Canvas() {
     }
 
     function touchMove(event: TouchEvent) {
+      if (isEraserRunning.current) {
+        stopDrawing();
+        return;
+      }
       if (toolsRef.current.moveSticker) {
         return;
       }
@@ -160,26 +175,35 @@ function Canvas() {
         setEraserPosition({ x: touch.clientX, y: touch.clientY });
         drawCanvas(touch.clientX, touch.clientY);
       } else {
-        const { offSetX, offSetY } = touchStart(event);
-
-        drawCanvas(offSetX, offSetY);
+        const touchStartResult = touchStart(event);
+        if (touchStartResult) {
+          const { offSetX, offSetY } = touchStartResult;
+          drawCanvas(offSetX, offSetY);
+        } else {
+          console.log("can't run stroke now");
+        }
       }
       // lastSent = now;
     }
 
     const startDrawing = (event: MouseEvent) => {
       isDrawing.current = true;
-      const { offsetX, offsetY } = getMousePosition(event);
-      ctx.beginPath();
-      ctx.moveTo(offsetX, offsetY);
+      const positions = getMousePosition(event);
+      if (positions) {
+        const { offsetX, offsetY } = positions;
 
-      const data = {
-        name,
-        steps: "start",
-        position: { offsetX, offsetY },
-        type: "canvas",
-      };
-      socketProvider.get("message")?.send(JSON.stringify(data));
+        ctx.beginPath();
+
+        ctx.moveTo(offsetX, offsetY);
+
+        const data = {
+          name,
+          steps: "start",
+          position: { offsetX, offsetY },
+          type: "canvas",
+        };
+        socketProvider.get("message")?.send(JSON.stringify(data));
+      }
     };
     const stopDrawing = () => {
       isDrawing.current = false;
@@ -187,6 +211,10 @@ function Canvas() {
       sendDataToUser(name as string, "canvas", "stop");
     };
     const drawCanvas = (offsetX: number, offsetY: number) => {
+      if (isEraserRunning.current) {
+        stopDrawing();
+        return;
+      }
       if (toolsRef.current.eraser) {
         for (let con in canvasMap.current) {
           canvasMap.current[con]["ctxRemoteUser"].globalCompositeOperation =
@@ -209,7 +237,10 @@ function Canvas() {
         ctx.beginPath();
         ctx.moveTo(offsetX, offsetY);
 
-        sendDataToUser(name as string, "canvas", "erase", { offsetX, offsetY });
+        sendDataToUser(name as string, "canvas", "erase", {
+          offsetX,
+          offsetY,
+        });
       } else if (toolsRef.current.showText) {
         // ctx.strokeStyle = "red";
         // ctx.lineWidth = 1;
@@ -249,13 +280,19 @@ function Canvas() {
       }
     };
     const draw = (event: MouseEvent) => {
+      if (toolsRef.current.moveSticker) {
+        return;
+      }
       // const now = Date.now();
       // if (now - lastSent < 20) return;
       if (!isDrawing.current) return;
 
-      const { offsetX, offsetY } = getMousePosition(event);
+      const positions = getMousePosition(event);
+      if (positions) {
+        const { offsetX, offsetY } = positions;
 
-      drawCanvas(offsetX, offsetY);
+        drawCanvas(offsetX, offsetY);
+      }
 
       // lastSent = now;
     };
@@ -302,6 +339,8 @@ function Canvas() {
       // console.log(ctx);
 
       // ctx!.save();
+      isEraserRunning.current = parsed.status === "erase" ? true : false;
+
       if (ctxRemoteUser) {
         ctxRemoteUser.strokeStyle = parsed?.strokeStyle;
         ctxRemoteUser.lineWidth = parsed?.lineWidth;
@@ -500,6 +539,8 @@ function Canvas() {
             border: "1px solid black",
             cursor: "grab",
             borderRadius: "10px",
+            zIndex: 999999,
+            backgroundColor: "white",
             boxShadow: "0px 0px 10px rgba(0,0,0,0.2)",
             transform: `translate(${eraserPosition.x - 100 / 2}px, ${
               eraserPosition.y - 100 / 2
@@ -581,7 +622,7 @@ function Canvas() {
                 sticketTextAtom: false,
               }));
 
-              toolsRef.current.eraser = true;
+              toolsRef.current.eraser = !toolsRef.current.eraser;
               toolsRef.current.canvasText = false;
               toolsRef.current.pickColor = false;
               toolsRef.current.showText = false;
@@ -769,16 +810,32 @@ function Canvas() {
           </li>
         </ul>
       </div>
+
+      <canvas
+        style={{
+          margin: 0,
+          width: "100%",
+          height: "100%",
+          padding: 0,
+          position: "relative",
+          zIndex: 99999,
+          backgroundColor: "transparent",
+        }}
+        ref={canvasRef}
+      />
       <div
         id="canvas-container"
         className=""
-        style={{ pointerEvents: "none", position: "relative" }}
-      ></div>
-
-      <canvas
-        // style={{ margin: 0, padding: 0 }}
-        className=" bg-white "
-        ref={canvasRef}
+        style={{
+          pointerEvents: "none",
+          width: "100%",
+          height: "100%",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          backgroundColor: "white",
+          zIndex: 9999,
+        }}
       />
     </div>
   );
