@@ -818,7 +818,7 @@ function Canvas() {
           height: "100%",
           padding: 0,
           position: "relative",
-          zIndex: 99999,
+          zIndex: 1,
           backgroundColor: "transparent",
         }}
         ref={canvasRef}
@@ -834,7 +834,7 @@ function Canvas() {
           top: 0,
           left: 0,
           backgroundColor: "white",
-          zIndex: 9999,
+          zIndex: 0,
         }}
       />
     </div>
