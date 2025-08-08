@@ -188,7 +188,7 @@ function PlayArea() {
       const data = {
         x: touch.clientX,
         y: touch.clientY,
-        width: window.innerWidth,
+        width: window.innerWidth - 30,
         height: window.innerHeight,
         name,
         type: "cursor",
