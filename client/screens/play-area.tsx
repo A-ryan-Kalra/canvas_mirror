@@ -182,10 +182,34 @@ function PlayArea() {
       }
     };
 
+    const touchMove = (event: TouchEvent) => {
+      const touch = event.touches[0];
+
+      const data = {
+        x: touch.clientX,
+        y: touch.clientY,
+        width: window.innerWidth,
+        height: window.innerHeight,
+        name,
+        type: "cursor",
+      };
+      //  setUserCursor(data);
+
+      if (socketCursor && socketCursor.readyState === WebSocket.OPEN) {
+        // console.log(data);
+
+        socketCursor.send(JSON.stringify(data));
+        // lastSent = now;
+      }
+    };
+
     window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("touchmove", touchMove);
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("touchmove", touchMove);
+
       socketCursor?.close();
       socket?.close();
 
