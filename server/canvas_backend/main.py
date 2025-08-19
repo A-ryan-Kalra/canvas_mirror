@@ -51,7 +51,7 @@ def healthz():
 
 
 @app.websocket("/ws/message/{room}")
-async def track_messages(websocket: WebSocket, room: int):
+async def track_messages(websocket: WebSocket, room: int | str):
     # await websocket.accept()
 
     name = websocket.query_params.get("name")
@@ -69,7 +69,7 @@ async def track_messages(websocket: WebSocket, room: int):
 
 
 @app.websocket("/ws/cursor/{room}")
-async def track_cursor(websocket: WebSocket, room: int):
+async def track_cursor(websocket: WebSocket, room: int | str):
     # await websocket.accept()
 
     name = websocket.query_params.get("name")
@@ -87,7 +87,7 @@ async def track_cursor(websocket: WebSocket, room: int):
 
 
 @app.websocket("/ws/remove/{room}")
-async def track_remove_sockets(websocket: WebSocket, room: int):
+async def track_remove_sockets(websocket: WebSocket, room: int | str):
     # await websocket.accept()
 
     name = websocket.query_params.get("name")

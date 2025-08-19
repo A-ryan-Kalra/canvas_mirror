@@ -9,14 +9,14 @@ class User:
     def __init__(self):
         self.active_connections: rooms = {}
 
-    async def connect(self, websocket: WebSocket, room: int, name: str):
+    async def connect(self, websocket: WebSocket, room: int | str, name: str):
         await websocket.accept()
 
         if room not in self.active_connections:
             self.active_connections[room] = []
         self.active_connections[room].append({"socket": websocket, "name": name})
 
-    def disconnect(self, websocket: WebSocket, room: int, name: str):
+    def disconnect(self, websocket: WebSocket, room: int | str, name: str):
         if room in self.active_connections:
             self.active_connections[room] = [
                 conn
@@ -27,7 +27,9 @@ class User:
     async def send_personal_message(self, message: str, websocket: WebSocket):
         await websocket.send_text(message)
 
-    async def broadcast(self, message: str, room: int, websocket: WebSocket, name: str):
+    async def broadcast(
+        self, message: str, room: int | str, websocket: WebSocket, name: str
+    ):
 
         if room in self.active_connections:
             for user in self.active_connections[room]:
@@ -45,14 +47,14 @@ class CursorMovement:
     def __init__(self):
         self.cursor_connections: rooms = {}
 
-    async def connect(self, websocket: WebSocket, room: int, name: str):
+    async def connect(self, websocket: WebSocket, room: int | str, name: str):
         await websocket.accept()
 
         if room not in self.cursor_connections:
             self.cursor_connections[room] = []
         self.cursor_connections[room].append({"socket": websocket, "name": name})
 
-    def disconnect(self, websocket: WebSocket, room: int, name: str):
+    def disconnect(self, websocket: WebSocket, room: int | str, name: str):
         if room in self.cursor_connections:
             self.cursor_connections[room] = [
                 conn
@@ -63,7 +65,9 @@ class CursorMovement:
     async def send_personal_message(self, message: str, websocket: WebSocket):
         await websocket.send_text(message)
 
-    async def broadcast(self, message: str, room: int, name: str, websocket: WebSocket):
+    async def broadcast(
+        self, message: str, room: int | str, name: str, websocket: WebSocket
+    ):
 
         if room in self.cursor_connections:
             for user in self.cursor_connections[room]:
@@ -80,14 +84,14 @@ class RemoveSocket:
     def __init__(self):
         self.current_session: rooms = {}
 
-    async def connect(self, websocket: WebSocket, room: int, name: str):
+    async def connect(self, websocket: WebSocket, room: int | str, name: str):
         await websocket.accept()
 
         if room not in self.current_session:
             self.current_session[room] = []
         self.current_session[room].append({"socket": websocket, "name": name})
 
-    def disconnect(self, websocket: WebSocket, room: int, name: str):
+    def disconnect(self, websocket: WebSocket, room: int | str, name: str):
         if room in self.current_session:
             self.current_session[room] = [
                 conn
@@ -98,7 +102,9 @@ class RemoveSocket:
     async def send_personal_message(self, message: str, websocket: WebSocket):
         await websocket.send_text(message)
 
-    async def broadcast(self, message: str, room: int, name: str, websocket: WebSocket):
+    async def broadcast(
+        self, message: str, room: int | str, name: str, websocket: WebSocket
+    ):
 
         if room in self.current_session:
             for user in self.current_session[room]:
