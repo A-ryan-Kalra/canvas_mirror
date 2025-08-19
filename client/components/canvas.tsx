@@ -59,11 +59,13 @@ function Canvas() {
     pickColor: boolean;
     penSize: boolean;
     canvasText: boolean;
+    whiteboard: boolean;
   }>({
     eraser: false,
     pickColor: false,
     penSize: false,
     canvasText: false,
+    whiteboard: false,
   });
 
   useEffect(() => {
@@ -105,11 +107,11 @@ function Canvas() {
     if (!ctx) return;
     let dpr;
     // const dpr = window.devicePixelRatio || 1;
-    if (window.innerWidth < 1200) {
-      dpr = 1;
-    } else {
-      dpr = window.devicePixelRatio || 1;
-    }
+    // if (window.innerWidth < 1200) {
+    //   dpr = 1;
+    // } else {
+    dpr = window.devicePixelRatio || 1;
+    // }
 
     canvas.width = window.innerWidth * dpr;
     canvas.height = window.innerHeight * dpr;
@@ -301,16 +303,17 @@ function Canvas() {
       if (canvasMap.current[userId]) return canvasMap.current[userId];
 
       const canvas = document.createElement("canvas");
-      if (window.innerWidth < 1200) {
-        dpr = 1;
-      } else {
-        dpr = window.devicePixelRatio || 1;
-      }
+      // if (window.innerWidth < 1200) {
+      //   dpr = 1;
+      // } else {
+      dpr = window.devicePixelRatio || 1;
+      // }
 
       canvas.width = window.innerWidth * dpr;
       canvas.height = window.innerHeight * dpr;
       canvas.style.width = `${window.innerWidth}px`;
       canvas.style.height = `${window.innerHeight}px`;
+      canvas.style.touchAction = "none";
       canvas.style.backgroundColor = "transparent";
       canvas.style.pointerEvents = "none";
       canvas.style.zIndex = "99999";
@@ -319,11 +322,11 @@ function Canvas() {
       document.getElementById("canvas-container")!.appendChild(canvas);
 
       const ctxRemoteUser = canvas!.getContext("2d");
-      if (window.innerWidth < 1200) {
-        dpr = 1;
-      } else {
-        dpr = window.devicePixelRatio || 1;
-      }
+      // if (window.innerWidth < 1200) {
+      //   dpr = 1;
+      // } else {
+      dpr = window.devicePixelRatio || 1;
+      // }
       ctxRemoteUser!.scale(dpr, dpr);
       canvasMap.current[userId] = { canvas, ctxRemoteUser };
       return { canvas, ctxRemoteUser };
@@ -437,12 +440,13 @@ function Canvas() {
     }
     function closeAllTools(event: KeyboardEvent) {
       if (event.key === "Escape") {
-        setTools({
+        setTools((prev) => ({
+          ...prev,
           canvasText: false,
           eraser: false,
           penSize: false,
           pickColor: false,
-        });
+        }));
         toolsRef.current.canvasText = false;
         toolsRef.current.eraser = false;
         toolsRef.current.pickColor = false;
@@ -465,11 +469,11 @@ function Canvas() {
 
       // const dpr = window.devicePixelRatio || 1;
       let dpr;
-      if (window.innerWidth < 1200) {
-        dpr = 1;
-      } else {
-        dpr = window.devicePixelRatio || 1;
-      }
+      // if (window.innerWidth < 1200) {
+      //   dpr = 1;
+      // } else {
+      dpr = window.devicePixelRatio || 1;
+      // }
       // dpr = window.devicePixelRatio || 1;
 
       canvas.width = window.innerWidth * dpr;
@@ -518,7 +522,8 @@ function Canvas() {
     e.preventDefault();
     toolsRef.current.canvasText = !toolsRef.current.canvasText;
 
-    setTools(() => ({
+    setTools((prev) => ({
+      ...prev,
       penSize: false,
       eraser: false,
       pickColor: false,
@@ -572,6 +577,7 @@ function Canvas() {
               toolsRef.current.pickColor = false;
               toolsRef.current.showText = false;
               setTools((prev) => ({
+                ...prev,
                 eraser: false,
                 penSize: false,
                 pickColor: !prev.pickColor,
@@ -627,6 +633,7 @@ function Canvas() {
               toolsRef.current.pickColor = false;
               toolsRef.current.showText = false;
               setTools((prev) => ({
+                ...prev,
                 penSize: false,
                 pickColor: false,
                 eraser: !prev.eraser,
@@ -643,6 +650,7 @@ function Canvas() {
               toolsRef.current.pickColor = false;
               toolsRef.current.showText = false;
               setTools((prev) => ({
+                ...prev,
                 penSize: !prev.penSize,
                 eraser: false,
                 pickColor: false,
@@ -712,7 +720,8 @@ function Canvas() {
               toolsRef.current.showText = false;
               ctx!.globalCompositeOperation = "source-over";
               // ctx!.fillStyle = ctx!.strokeStyle;
-              setTools(() => ({
+              setTools((prev) => ({
+                ...prev,
                 penSize: false,
                 eraser: false,
                 pickColor: false,
@@ -793,7 +802,8 @@ function Canvas() {
                 ...prev,
                 sticketTextAtom: !prev.sticketTextAtom,
               }));
-              setTools(() => ({
+              setTools((prev) => ({
+                ...prev,
                 penSize: false,
                 eraser: false,
                 pickColor: false,
@@ -813,6 +823,7 @@ function Canvas() {
 
       <canvas
         style={{
+          touchAction: "none",
           margin: 0,
           width: "100%",
           height: "100%",

@@ -126,6 +126,7 @@ function UserCursorMovement({
     divEl.style.borderRadius = "10px";
     divEl.style.padding = "0.55rem";
     divEl.style.zIndex = "99999";
+    divEl.style.touchAction = "none";
     divEl.spellcheck = false;
     divEl.style.font = `${showStickerDetails.fontSize}px Arial`;
 
