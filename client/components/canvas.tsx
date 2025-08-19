@@ -106,13 +106,9 @@ function Canvas() {
     setCtx(context);
     if (!ctx) return;
     let dpr;
-    // const dpr = window.devicePixelRatio || 1;
-    // if (window.innerWidth < 1200) {
-    //   dpr = 1;
-    // } else {
-    dpr = window.devicePixelRatio || 1;
-    // }
 
+    dpr = window.devicePixelRatio || 1;
+    console.log("dpr", dpr);
     canvas.width = window.innerWidth * dpr;
     canvas.height = window.innerHeight * dpr;
     canvas.style.width = `${window.innerWidth}px`;
@@ -303,11 +299,8 @@ function Canvas() {
       if (canvasMap.current[userId]) return canvasMap.current[userId];
 
       const canvas = document.createElement("canvas");
-      // if (window.innerWidth < 1200) {
-      //   dpr = 1;
-      // } else {
+
       dpr = window.devicePixelRatio || 1;
-      // }
 
       canvas.width = window.innerWidth * dpr;
       canvas.height = window.innerHeight * dpr;
@@ -322,11 +315,9 @@ function Canvas() {
       document.getElementById("canvas-container")!.appendChild(canvas);
 
       const ctxRemoteUser = canvas!.getContext("2d");
-      // if (window.innerWidth < 1200) {
-      //   dpr = 1;
-      // } else {
+
       dpr = window.devicePixelRatio || 1;
-      // }
+
       ctxRemoteUser!.scale(dpr, dpr);
       canvasMap.current[userId] = { canvas, ctxRemoteUser };
       return { canvas, ctxRemoteUser };
@@ -467,14 +458,9 @@ function Canvas() {
       //  Save the current drawing as an image
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-      // const dpr = window.devicePixelRatio || 1;
       let dpr;
-      // if (window.innerWidth < 1200) {
-      //   dpr = 1;
-      // } else {
+
       dpr = window.devicePixelRatio || 1;
-      // }
-      // dpr = window.devicePixelRatio || 1;
 
       canvas.width = window.innerWidth * dpr;
       canvas.height = window.innerHeight * dpr;
