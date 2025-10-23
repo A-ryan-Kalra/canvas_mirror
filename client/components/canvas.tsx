@@ -108,7 +108,7 @@ function Canvas() {
     let dpr;
 
     dpr = window.devicePixelRatio || 1;
-    console.log("dpr", dpr);
+
     canvas.width = window.innerWidth * dpr;
     canvas.height = window.innerHeight * dpr;
     canvas.style.width = `${window.innerWidth}px`;
