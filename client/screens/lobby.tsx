@@ -39,8 +39,7 @@ function Lobby() {
 
     // if (success) navigate(`/room/${room}?accessId=${id}&name=${name}`);
     if (success) {
-      const unique = Date.now().toString().slice(-3);
-      navigate(`/room/${room}?name=${name}&accessId=${unique}`);
+      navigate(`/room/${room}?name=${name}`);
     }
   }
   //   function handleErrorMssage({ message }) {

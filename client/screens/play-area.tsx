@@ -15,8 +15,6 @@ function PlayArea() {
   const searchParams = new URLSearchParams(location.search);
   const { roomId } = useParams();
   const name = searchParams.get("name");
-
-  const unique = searchParams.get("accessId");
   const { socketProvider } = useSocket();
   const [show, setShowInput] = useState<boolean>(false);
   const divRefs = useRef<HTMLDivElement[]>([]);
@@ -30,7 +28,7 @@ function PlayArea() {
     const socket = new WebSocket(
       `${protocol}://${
         import.meta.env.VITE_WEBSITE_URL
-      }/ws/message/${roomId}?name=${name}${unique}`
+      }/ws/message/${roomId}?name=${name}`
       // `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/message/${roomId}?name=${name}`
     );
     // const ws = new WebSocket(
@@ -89,7 +87,7 @@ function PlayArea() {
     const socketCursor = new WebSocket(
       `${protocol}://${
         import.meta.env.VITE_WEBSITE_URL
-      }/ws/cursor/${roomId}?name=${name}${unique}`
+      }/ws/cursor/${roomId}?name=${name}`
       // `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/cursor/${roomId}?name=${name}`
     );
 
@@ -230,7 +228,7 @@ function PlayArea() {
     const removePlayerSocket = new WebSocket(
       `${protocol}://${
         import.meta.env.VITE_WEBSITE_URL
-      }/ws/remove/${roomId}?name=${name}${unique}`
+      }/ws/remove/${roomId}?name=${name}`
       // `wss://8f0nnzr5-5173.inc1.devtunnels.ms/ws/remove/${roomId}?name=${name}`
     );
 
