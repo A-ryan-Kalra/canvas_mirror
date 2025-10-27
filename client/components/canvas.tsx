@@ -26,7 +26,8 @@ function Canvas() {
 
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
-  const name = searchParams.get("name");
+  const unique = searchParams.get("accessId");
+  const name = (searchParams.get("name") || "") + unique;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const palleteRef = useRef<HTMLDivElement>(null);
   const [ctx, setCtx] = useState<CanvasRenderingContext2D>();

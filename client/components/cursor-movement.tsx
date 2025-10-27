@@ -10,7 +10,8 @@ function CursorMovement({ position }: CursorMovementProps) {
   const [messages, setMessages] = useState({ message: "", name: "" });
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
-  const name = searchParams.get("name");
+  const unique = searchParams.get("accessId");
+  const name = (searchParams.get("name") || "") + unique;
 
   // const [userCursor, setUserCursor] = useState<{
   //   x: number;
